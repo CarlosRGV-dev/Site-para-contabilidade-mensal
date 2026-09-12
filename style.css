@@ -1,0 +1,472 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --fundo: #f4f6f8;
+    --branco: #ffffff;
+    --texto: #1f2937;
+    --texto-secundario: #6b7280;
+    --borda: #e5e7eb;
+    --principal: #2563eb;
+    --principal-hover: #1d4ed8;
+    --verde: #16a34a;
+    --vermelho: #dc2626;
+    --cinza: #f3f4f6;
+    --sombra: 0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    min-height: 100vh;
+}
+
+
+/* =========================
+   TOPO
+========================= */
+
+.topo {
+    background: #111827;
+    color: white;
+    padding: 25px 20px;
+}
+
+.topo > div {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.topo h1 {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.topo p {
+    color: #d1d5db;
+}
+
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container {
+    max-width: 1400px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    background: var(--branco);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: var(--sombra);
+}
+
+.card h2 {
+    margin-bottom: 8px;
+}
+
+.descricao,
+.titulo-secao p {
+    color: var(--texto-secundario);
+    font-size: 14px;
+}
+
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.valores-padrao {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+    max-width: 600px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--borda);
+    border-radius: 7px;
+    background: white;
+    font-size: 14px;
+    color: var(--texto);
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--principal);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.input-dinheiro {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--borda);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.input-dinheiro span {
+    background: var(--cinza);
+    padding: 11px;
+    font-size: 13px;
+    color: var(--texto-secundario);
+}
+
+.input-dinheiro input {
+    border: none;
+    border-radius: 0;
+}
+
+
+/* =========================
+   TÍTULOS
+========================= */
+
+.titulo-secao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+
+/* =========================
+   TABELA
+========================= */
+
+.tabela-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabela {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+}
+
+.tabela th {
+    background: #111827;
+    color: white;
+    padding: 13px 8px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tabela td {
+    border-bottom: 1px solid var(--borda);
+    padding: 8px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.tabela tr:hover td {
+    background: #f9fafb;
+}
+
+.tabela input {
+    height: 36px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.tabela .input-pequeno {
+    width: 75px;
+}
+
+.tabela .input-dinheiro-dia {
+    width: 110px;
+}
+
+.tabela .total-dia {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.dia-domingo {
+    color: var(--vermelho);
+}
+
+.dia-sabado {
+    color: #7c3aed;
+}
+
+.linha-nao-trabalhou {
+    opacity: 0.55;
+}
+
+
+/* Checkbox */
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+
+/* =========================
+   BOTÕES
+========================= */
+
+.btn {
+    border: none;
+    border-radius: 7px;
+    padding: 11px 16px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-principal {
+    background: var(--principal);
+    color: white;
+}
+
+.btn-principal:hover {
+    background: var(--principal-hover);
+}
+
+.btn-secundario {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.btn-secundario:hover {
+    background: #d1d5db;
+}
+
+.btn-perigo {
+    background: #fee2e2;
+    color: var(--vermelho);
+}
+
+.btn-perigo:hover {
+    background: #fecaca;
+}
+
+.botoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+
+/* =========================
+   RESUMO
+========================= */
+
+.resumo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.resumo-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--sombra);
+    border-left: 4px solid #d1d5db;
+}
+
+.resumo-card span {
+    display: block;
+    color: var(--texto-secundario);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.resumo-card strong {
+    font-size: 22px;
+}
+
+.resumo-card.destaque {
+    border-left-color: var(--verde);
+    background: #f0fdf4;
+}
+
+.resumo-card.destaque strong {
+    color: var(--verde);
+}
+
+
+/* =========================
+   PERÍODO
+========================= */
+
+.periodo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+
+/* =========================
+   SEMANAS
+========================= */
+
+.semanas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.semana-card {
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.semana-card h3 {
+    margin-bottom: 5px;
+}
+
+.semana-card .datas {
+    color: var(--texto-secundario);
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+.semana-info {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--borda);
+    padding-top: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.semana-total {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 15px;
+    color: var(--verde);
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media (max-width: 1000px) {
+
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .campo-grande {
+        grid-column: span 2;
+    }
+
+    .resumo-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .topo h1 {
+        font-size: 23px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .campo-grande {
+        grid-column: auto;
+    }
+
+    .valores-padrao {
+        grid-template-columns: 1fr;
+    }
+
+    .resumo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .periodo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .titulo-secao {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .botoes {
+        flex-direction: column;
+    }
+
+}

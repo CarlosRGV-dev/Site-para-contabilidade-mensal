@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Controle de Pagamentos</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Biblioteca para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+
+<header class="topo">
+    <div>
+        <h1>Controle de Pagamentos</h1>
+        <p>Controle suas diárias, horas trabalhadas e horas extras.</p>
+    </div>
+</header>
+
+
+<main class="container">
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="card configuracoes">
+
+        <h2>Informações do período</h2>
+
+        <div class="form-grid">
+
+            <div class="campo campo-grande">
+                <label for="nome">Nome</label>
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Nome da pessoa"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="ano">Ano</label>
+                <input
+                    type="number"
+                    id="ano"
+                    min="2000"
+                    max="2100"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="mes">Mês</label>
+
+                <select id="mes">
+
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="tipoPagamento">Tipo de pagamento</label>
+
+                <select id="tipoPagamento">
+
+                    <option value="mensal">Mensal</option>
+                    <option value="semanal">Semanal</option>
+
+                </select>
+            </div>
+
+        </div>
+
+
+        <div class="valores-padrao">
+
+            <div class="campo">
+                <label for="diariaPadrao">
+                    Diária padrão
+                </label>
+
+                <div class="input-dinheiro">
+                    <span>R$</span>
+
+                    <input
+                        type="number"
+                        id="diariaPadrao"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                    >
+                </div>
+            </div>
+
+
+            <div class="campo">
+                <label for="horaExtraPadrao">
+                    Hora extra padrão
+                </label>
+
+                <div class="input-dinheiro">
+                    <span>R$</span>
+
+                    <input
+                        type="number"
+                        id="horaExtraPadrao"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                    >
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CALENDÁRIO -->
+    <section class="card">
+
+        <div class="titulo-secao">
+
+            <div>
+                <h2 id="tituloCalendario">
+                    Setembro de 2026
+                </h2>
+
+                <p>
+                    Informe as horas e os valores de cada dia.
+                </p>
+            </div>
+
+            <button
+                class="btn btn-secundario"
+                id="btnHoje"
+            >
+                Ir para o mês atual
+            </button>
+
+        </div>
+
+
+        <div class="tabela-container">
+
+            <table class="tabela">
+
+                <thead>
+
+                    <tr>
+                        <th>Data</th>
+                        <th>Dia</th>
+                        <th>Trabalhou</th>
+                        <th>Horas</th>
+                        <th>Horas extras</th>
+                        <th>Valor/h extra</th>
+                        <th>Diária</th>
+                        <th>Total</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tabelaDias">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- RESUMO -->
+    <section class="resumo-grid">
+
+        <div class="resumo-card">
+            <span>Dias trabalhados</span>
+            <strong id="totalDias">0</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span>Horas trabalhadas</span>
+            <strong id="totalHoras">0h</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span>Horas extras</span>
+            <strong id="totalHorasExtras">0h</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span>Total das diárias</span>
+            <strong id="totalDiarias">R$ 0,00</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span>Total horas extras</span>
+            <strong id="totalExtras">R$ 0,00</strong>
+        </div>
+
+        <div class="resumo-card destaque">
+            <span>Total a receber</span>
+            <strong id="totalGeral">R$ 0,00</strong>
+        </div>
+
+    </section>
+
+
+    <!-- FECHAMENTO -->
+    <section class="card fechamento">
+
+        <h2>Fechamento</h2>
+
+        <div class="botoes">
+
+            <button
+                class="btn btn-principal"
+                id="btnPdfMes"
+            >
+                📄 PDF do mês
+            </button>
+
+            <button
+                class="btn btn-principal"
+                id="btnPdfSemana"
+            >
+                📄 PDF semanal
+            </button>
+
+            <button
+                class="btn btn-principal"
+                id="btnPdfPeriodo"
+            >
+                📄 PDF por período
+            </button>
+
+            <button
+                class="btn btn-secundario"
+                id="btnSalvar"
+            >
+                💾 Salvar
+            </button>
+
+            <button
+                class="btn btn-perigo"
+                id="btnLimpar"
+            >
+                🗑 Limpar mês
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- PERÍODO PERSONALIZADO -->
+    <section class="card">
+
+        <h2>Período personalizado</h2>
+
+        <p class="descricao">
+            Escolha uma data inicial e uma data final para gerar um relatório.
+        </p>
+
+        <div class="periodo-grid">
+
+            <div class="campo">
+                <label for="dataInicio">
+                    Data inicial
+                </label>
+
+                <input
+                    type="date"
+                    id="dataInicio"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="dataFim">
+                    Data final
+                </label>
+
+                <input
+                    type="date"
+                    id="dataFim"
+                >
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- RESUMO SEMANAL -->
+    <section class="card">
+
+        <div class="titulo-secao">
+
+            <div>
+                <h2>Fechamento semanal</h2>
+
+                <p>
+                    O mês é dividido automaticamente em semanas de segunda a domingo.
+                </p>
+            </div>
+
+        </div>
+
+        <div
+            class="semanas-container"
+            id="semanasContainer"
+        >
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+    <p>Controle de Pagamentos</p>
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
