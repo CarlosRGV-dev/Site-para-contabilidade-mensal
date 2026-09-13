@@ -55,6 +55,9 @@ const horaExtraPadraoInput =
 const tabelaDias =
     document.getElementById("tabelaDias");
 
+const diasMobile =
+    document.getElementById("diasMobile");
+
 const tituloCalendario =
     document.getElementById("tituloCalendario");
 
@@ -222,6 +225,7 @@ function gerarCalendario() {
         `${MESES[mes]} de ${ano}`;
 
     tabelaDias.innerHTML = "";
+    diasMobile.innerHTML = "";
 
     const quantidadeDias =
         diasNoMes(ano, mes);
@@ -254,6 +258,11 @@ function gerarCalendario() {
         }
 
         const dados = dadosDias[chave];
+
+
+        /* =================================================
+           TABELA DESKTOP
+        ================================================= */
 
         const tr = document.createElement("tr");
 
@@ -349,15 +358,159 @@ function gerarCalendario() {
 
         tabelaDias.appendChild(tr);
 
+
+        /* =================================================
+           CARD MOBILE
+        ================================================= */
+
+        const cardMobile =
+            document.createElement("div");
+
+        cardMobile.className =
+            `dia-mobile ${
+                dados.trabalhou
+                    ? "trabalhado"
+                    : "nao-trabalhado"
+            }`;
+
+        cardMobile.dataset.chave = chave;
+
+        cardMobile.innerHTML = `
+
+            <div class="dia-mobile-header">
+
+                <div class="dia-mobile-data">
+
+                    <span class="dia-mobile-numero">
+                        ${String(dia).padStart(2, "0")}/${String(mes + 1).padStart(2, "0")}
+                    </span>
+
+                    <span class="dia-mobile-semana ${classeDia}">
+                        ${DIAS_SEMANA[diaSemana]}
+                    </span>
+
+                </div>
+
+                <label class="trabalhou-mobile">
+
+                    <input
+                        type="checkbox"
+                        data-chave="${chave}"
+                        data-campo="trabalhou"
+                        ${dados.trabalhou ? "checked" : ""}
+                    >
+
+                    Trabalhou
+
+                </label>
+
+            </div>
+
+
+            <div class="dia-mobile-campos">
+
+                <div class="dia-mobile-campo">
+
+                    <label>
+                        Horas trabalhadas
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        data-chave="${chave}"
+                        data-campo="horas"
+                        value="${dados.horas}"
+                    >
+
+                </div>
+
+
+                <div class="dia-mobile-campo">
+
+                    <label>
+                        Horas extras
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        data-chave="${chave}"
+                        data-campo="horasExtras"
+                        value="${dados.horasExtras}"
+                    >
+
+                </div>
+
+
+                <div class="dia-mobile-campo largo">
+
+                    <label>
+                        Valor por hora extra
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-chave="${chave}"
+                        data-campo="valorHoraExtra"
+                        value="${dados.valorHoraExtra}"
+                    >
+
+                </div>
+
+
+                <div class="dia-mobile-campo largo">
+
+                    <label>
+                        Diária
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-chave="${chave}"
+                        data-campo="diaria"
+                        value="${dados.diaria}"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="dia-mobile-total">
+
+                <span>
+                    Total do dia
+                </span>
+
+                <strong class="total-mobile">
+                    ${calcularTotalDia(dados)}
+                </strong>
+
+            </div>
+
+        `;
+
+        diasMobile.appendChild(cardMobile);
+
     }
 
+
     adicionarEventosTabela();
+
+    adicionarEventosMobile();
 
 }
 
 
 /* =========================================================
-   EVENTOS DA TABELA
+   EVENTOS DA TABELA DESKTOP
 ========================================================= */
 
 function adicionarEventosTabela() {
@@ -383,7 +536,33 @@ function adicionarEventosTabela() {
 
 
 /* =========================================================
-   ALTERAR DIA
+   EVENTOS DOS CARDS MOBILE
+========================================================= */
+
+function adicionarEventosMobile() {
+
+    const inputs =
+        diasMobile.querySelectorAll("input");
+
+    inputs.forEach(input => {
+
+        input.addEventListener(
+            "input",
+            alterarDiaMobile
+        );
+
+        input.addEventListener(
+            "change",
+            alterarDiaMobile
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   ALTERAR DIA - DESKTOP
 ========================================================= */
 
 function alterarDia(evento) {
@@ -411,6 +590,8 @@ function alterarDia(evento) {
 
     atualizarLinha(input);
 
+    atualizarCardMobile(chave);
+
     atualizarResumo();
 
     gerarResumoSemanal();
@@ -421,7 +602,47 @@ function alterarDia(evento) {
 
 
 /* =========================================================
-   ATUALIZAR LINHA
+   ALTERAR DIA - MOBILE
+========================================================= */
+
+function alterarDiaMobile(evento) {
+
+    const input = evento.target;
+
+    const chave = input.dataset.chave;
+    const campo = input.dataset.campo;
+
+    if (!dadosDias[chave]) {
+        dadosDias[chave] = {};
+    }
+
+    if (campo === "trabalhou") {
+
+        dadosDias[chave][campo] =
+            input.checked;
+
+    } else {
+
+        dadosDias[chave][campo] =
+            numero(input.value);
+
+    }
+
+    atualizarCardMobile(chave);
+
+    atualizarLinhaDesktop(chave);
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+
+    salvarDados(false);
+
+}
+
+
+/* =========================================================
+   ATUALIZAR LINHA DESKTOP
 ========================================================= */
 
 function atualizarLinha(input) {
@@ -432,14 +653,39 @@ function atualizarLinha(input) {
     const chave =
         input.dataset.chave;
 
+    atualizarLinhaDesktop(chave, linha);
+
+}
+
+
+function atualizarLinhaDesktop(chave, linhaInformada = null) {
+
     const dados =
         dadosDias[chave];
+
+    if (!dados) {
+        return;
+    }
+
+    const linha =
+        linhaInformada ||
+        tabelaDias.querySelector(
+            `tr input[data-chave="${chave}"]`
+        )?.closest("tr");
+
+    if (!linha) {
+        return;
+    }
 
     const total =
         linha.querySelector(".total-dia");
 
-    total.textContent =
-        calcularTotalDia(dados);
+    if (total) {
+
+        total.textContent =
+            calcularTotalDia(dados);
+
+    }
 
     if (dados.trabalhou) {
 
@@ -451,6 +697,57 @@ function atualizarLinha(input) {
 
         linha.classList.add(
             "linha-nao-trabalhou"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ATUALIZAR CARD MOBILE
+========================================================= */
+
+function atualizarCardMobile(chave) {
+
+    const card =
+        diasMobile.querySelector(
+            `.dia-mobile[data-chave="${chave}"]`
+        );
+
+    if (!card) {
+        return;
+    }
+
+    const dados =
+        dadosDias[chave];
+
+    const total =
+        card.querySelector(".total-mobile");
+
+    if (total) {
+
+        total.textContent =
+            calcularTotalDia(dados);
+
+    }
+
+    if (dados.trabalhou) {
+
+        card.classList.add("trabalhado");
+
+        card.classList.remove(
+            "nao-trabalhado"
+        );
+
+    } else {
+
+        card.classList.remove(
+            "trabalhado"
+        );
+
+        card.classList.add(
+            "nao-trabalhado"
         );
 
     }
@@ -782,20 +1079,6 @@ function gerarResumoSemanal() {
                 dia
             );
 
-        /*
-            JavaScript:
-            domingo = 0
-            segunda = 1
-            ...
-            sábado = 6
-
-            Aqui transformamos para:
-            segunda = 0
-            terça = 1
-            ...
-            domingo = 6
-        */
-
         const indiceSemana =
             (data.getDay() + 6) % 7;
 
@@ -981,7 +1264,7 @@ function obterDadosPeriodo(dataInicio, dataFim) {
 
 
 /* =========================================================
-   GERAR PDF DO MÊS
+   PDF DO MÊS
 ========================================================= */
 
 function gerarPdfMes() {
@@ -1016,7 +1299,7 @@ function gerarPdfMes() {
 
 
 /* =========================================================
-   GERAR PDF SEMANAL
+   PDF SEMANAL
 ========================================================= */
 
 function gerarPdfSemanal() {
@@ -1059,10 +1342,6 @@ function gerarPdfSemanal() {
         return;
 
     }
-
-    /*
-        Segunda-feira até domingo.
-    */
 
     const indice =
         (data.getDay() + 6) % 7;
@@ -1128,15 +1407,6 @@ function gerarPdfPeriodo() {
         return;
 
     }
-
-    /*
-        O sistema atualmente guarda os dados
-        de cada mês separadamente.
-
-        Para períodos que atravessam meses,
-        vamos carregar os dados de cada mês
-        automaticamente.
-    */
 
     gerarPdfPeriodoCompleto(
         inicio,

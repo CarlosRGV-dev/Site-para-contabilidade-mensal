@@ -55,7 +55,6 @@
                 <label for="mes">Mês</label>
 
                 <select id="mes">
-
                     <option value="0">Janeiro</option>
                     <option value="1">Fevereiro</option>
                     <option value="2">Março</option>
@@ -68,7 +67,6 @@
                     <option value="9">Outubro</option>
                     <option value="10">Novembro</option>
                     <option value="11">Dezembro</option>
-
                 </select>
             </div>
 
@@ -76,10 +74,8 @@
                 <label for="tipoPagamento">Tipo de pagamento</label>
 
                 <select id="tipoPagamento">
-
                     <option value="mensal">Mensal</option>
                     <option value="semanal">Semanal</option>
-
                 </select>
             </div>
 
@@ -131,7 +127,7 @@
 
 
     <!-- CALENDÁRIO -->
-    <section class="card">
+    <section class="card calendario-card">
 
         <div class="titulo-secao">
 
@@ -154,6 +150,10 @@
 
         </div>
 
+
+        <!-- ================================
+             VERSÃO DESKTOP
+        ================================= -->
 
         <div class="tabela-container">
 
@@ -179,6 +179,17 @@
 
             </table>
 
+        </div>
+
+
+        <!-- ================================
+             VERSÃO MOBILE
+        ================================= -->
+
+        <div
+            class="dias-mobile"
+            id="diasMobile"
+        >
         </div>
 
     </section>
@@ -332,7 +343,15 @@
 
 
 <footer>
-    <p>Controle de Pagamentos <a href="https://github.com/CarlosRGV-dev" target="_blank">Carlos Roberto</a></p>
+    <p>
+        Controle de Pagamentos
+        <a
+            href="https://github.com/CarlosRGV-dev"
+            target="_blank"
+        >
+            Carlos Roberto
+        </a>
+    </p>
 </footer>
 
 
