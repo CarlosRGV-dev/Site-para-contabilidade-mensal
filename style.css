@@ -1,943 +1,1230 @@
+:root {
+
+    --fundo: #f4f6f8;
+    --branco: #ffffff;
+
+    --texto: #1f2937;
+    --texto-secundario: #6b7280;
+
+    --borda: #e5e7eb;
+
+    --principal: #2563eb;
+    --principal-hover: #1d4ed8;
+
+    --verde: #16a34a;
+    --vermelho: #dc2626;
+
+    --cinza: #f3f4f6;
+
+    --sombra: 0 4px 15px rgba(0, 0, 0, .07);
+
+    --campo-fundo: #ffffff;
+
+    --transicao: .2s ease;
+}
+
+
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
-:root {
-    --fundo: #f4f6f8;
-    --branco: #ffffff;
-    --texto: #1f2937;
-    --texto-secundario: #6b7280;
-    --borda: #e5e7eb;
-    --principal: #2563eb;
-    --principal-hover: #1d4ed8;
-    --verde: #16a34a;
-    --vermelho: #dc2626;
-    --cinza: #f3f4f6;
-    --sombra: 0 4px 15px rgba(0, 0, 0, 0.07);
-}
 
 html {
     scroll-behavior: smooth;
 }
 
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
+
+    margin: 0;
+
     background: var(--fundo);
+
     color: var(--texto);
-    min-height: 100vh;
-    overflow-x: hidden;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    transition:
+        background var(--transicao),
+        color var(--transicao);
 }
 
 
-/* =========================================================
-   TOPO
-========================================================= */
+button,
+input,
+select {
+    font-family: inherit;
+}
+
+
+button {
+    cursor: pointer;
+}
+
+
+/* =========================
+   CABEÇALHO
+========================= */
 
 .topo {
+
     background: #111827;
+
     color: white;
-    padding: 25px 20px;
+
+    padding: 22px 15px;
 }
 
-.topo > div {
+
+.topo-conteudo {
+
     max-width: 1400px;
+
     margin: auto;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
 }
+
 
 .topo h1 {
+
+    margin: 0 0 6px;
+
     font-size: 28px;
-    margin-bottom: 6px;
 }
+
 
 .topo p {
+
+    margin: 0;
+
     color: #d1d5db;
-    line-height: 1.5;
 }
 
 
-/* =========================================================
+/* =========================
    CONTAINER
-========================================================= */
+========================= */
 
 .container {
-    width: 100%;
+
     max-width: 1400px;
+
     margin: 25px auto;
+
     padding: 0 15px;
 }
 
 
-/* =========================================================
+/* =========================
    CARDS
-========================================================= */
+========================= */
 
 .card {
+
     background: var(--branco);
+
     border-radius: 12px;
+
     padding: 25px;
+
     margin-bottom: 20px;
+
     box-shadow: var(--sombra);
+
+    transition:
+        background var(--transicao),
+        box-shadow var(--transicao);
 }
+
 
 .card h2 {
+
+    margin-top: 0;
+
     margin-bottom: 8px;
-    font-size: 20px;
 }
 
-.descricao,
-.titulo-secao p {
+
+.descricao {
+
     color: var(--texto-secundario);
-    font-size: 14px;
-    line-height: 1.5;
+
+    margin-top: 0;
+
+    margin-bottom: 20px;
 }
 
 
-/* =========================================================
+/* =========================
    FORMULÁRIOS
-========================================================= */
+========================= */
 
 .form-grid {
+
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+
+    grid-template-columns:
+        2fr
+        1fr
+        1fr
+        1fr;
+
     gap: 15px;
+}
+
+
+.valores-padrao {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+
+    max-width: 600px;
+
     margin-top: 20px;
 }
 
-.valores-padrao {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 15px;
-    max-width: 600px;
-}
 
 .campo {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 7px;
 }
 
+
 .campo label {
-    font-size: 13px;
-    font-weight: bold;
+
+    font-weight: 600;
+
+    font-size: 14px;
 }
+
 
 input,
 select {
+
     width: 100%;
-    height: 42px;
-    padding: 0 12px;
+
     border: 1px solid var(--borda);
-    border-radius: 7px;
-    background: white;
-    font-size: 14px;
+
+    background: var(--campo-fundo);
+
     color: var(--texto);
+
+    border-radius: 8px;
+
+    padding: 11px 12px;
+
+    font-size: 15px;
+
     outline: none;
-    min-width: 0;
+
+    transition:
+        border var(--transicao),
+        box-shadow var(--transicao),
+        background var(--transicao),
+        color var(--transicao);
 }
+
 
 input:focus,
 select:focus {
+
     border-color: var(--principal);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, .12);
 }
 
-
-/* =========================================================
-   INPUT DINHEIRO
-========================================================= */
 
 .input-dinheiro {
+
     display: flex;
+
     align-items: center;
+
     border: 1px solid var(--borda);
-    border-radius: 7px;
+
+    border-radius: 8px;
+
     overflow: hidden;
-    background: white;
+
+    background: var(--campo-fundo);
 }
 
+
 .input-dinheiro span {
-    background: var(--cinza);
-    padding: 11px;
-    font-size: 13px;
+
+    padding-left: 12px;
+
+    font-weight: 600;
+
     color: var(--texto-secundario);
 }
 
+
 .input-dinheiro input {
+
     border: none;
+
+    box-shadow: none;
+
     border-radius: 0;
 }
 
 
-/* =========================================================
-   TÍTULOS
-========================================================= */
+/* =========================
+   BOTÕES
+========================= */
+
+.btn {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 11px 16px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    transition:
+        background var(--transicao),
+        transform var(--transicao),
+        opacity var(--transicao);
+}
+
+
+.btn:hover {
+
+    transform: translateY(-1px);
+}
+
+
+.btn-principal {
+
+    background: var(--principal);
+
+    color: white;
+}
+
+
+.btn-principal:hover {
+
+    background: var(--principal-hover);
+}
+
+
+.btn-secundario {
+
+    background: var(--cinza);
+
+    color: var(--texto);
+}
+
+
+.btn-secundario:hover {
+
+    opacity: .85;
+}
+
+
+.btn-perigo {
+
+    background: var(--vermelho);
+
+    color: white;
+}
+
+
+.btn-perigo:hover {
+
+    background: #b91c1c;
+}
+
+
+.btn-tema {
+
+    background: #374151;
+
+    color: white;
+}
+
+
+.acoes-padrao {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================
+   TÍTULO DA SEÇÃO
+========================= */
 
 .titulo-secao {
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     gap: 20px;
+
     margin-bottom: 20px;
 }
 
 
-/* =========================================================
-   TABELA DESKTOP
-========================================================= */
+.titulo-secao h2 {
 
-.tabela-container {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--borda);
-    border-radius: 8px;
+    margin-bottom: 5px;
 }
 
-.tabela {
+
+.titulo-secao p {
+
+    margin: 0;
+
+    color: var(--texto-secundario);
+}
+
+
+/* =========================
+   NAVEGAÇÃO
+========================= */
+
+.navegacao-meses {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: var(--cinza);
+}
+
+
+.navegacao-meses strong {
+
+    min-width: 170px;
+
+    text-align: center;
+}
+
+
+/* =========================
+   TABELA DESKTOP
+========================= */
+
+.tabela-container {
+
     width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.tabela {
+
+    width: 100%;
+
     min-width: 950px;
+
     border-collapse: collapse;
 }
 
-.tabela th {
-    background: #111827;
-    color: white;
-    padding: 13px 8px;
-    font-size: 12px;
-    text-align: center;
-    white-space: nowrap;
-}
 
+.tabela th,
 .tabela td {
+
     border-bottom: 1px solid var(--borda);
-    padding: 8px;
+
+    padding: 10px;
+
     text-align: center;
-    font-size: 13px;
-    white-space: nowrap;
+
+    font-size: 14px;
 }
 
-.tabela tbody tr:last-child td {
-    border-bottom: none;
+
+.tabela th {
+
+    background: var(--cinza);
+
+    font-weight: 700;
 }
 
-.tabela tr:hover td {
-    background: #f9fafb;
-}
 
-.tabela input {
-    height: 36px;
+.tabela td input[type="number"] {
+
     min-width: 80px;
-    text-align: center;
 }
 
-.tabela .input-pequeno {
-    width: 75px;
+
+.tabela td input[type="text"] {
+
+    min-width: 90px;
 }
 
-.tabela .input-dinheiro-dia {
-    width: 110px;
-}
 
 .tabela .total-dia {
-    font-weight: bold;
+
+    font-weight: 700;
+
+    color: var(--verde);
+
     white-space: nowrap;
 }
 
-.dia-domingo {
-    color: var(--vermelho);
-}
 
-.dia-sabado {
-    color: #7c3aed;
-}
+.linha-trabalhou {
 
-.linha-nao-trabalhou {
-    opacity: 0.55;
+    background: rgba(22, 163, 74, .04);
 }
 
 
-/* =========================================================
-   MOBILE - CONTAINER DOS CARDS
-========================================================= */
+/* =========================
+   MOBILE
+========================= */
 
 .dias-mobile {
+
     display: none;
 }
 
 
-/* =========================================================
-   CHECKBOX
-========================================================= */
-
-.checkbox {
-    width: 18px !important;
-    height: 18px !important;
-    cursor: pointer;
-    min-width: 18px !important;
-}
-
-
-/* =========================================================
-   BOTÕES
-========================================================= */
-
-.btn {
-    border: none;
-    border-radius: 7px;
-    padding: 11px 16px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 13px;
-    transition: 0.2s;
-    min-height: 42px;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-principal {
-    background: var(--principal);
-    color: white;
-}
-
-.btn-principal:hover {
-    background: var(--principal-hover);
-}
-
-.btn-secundario {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-.btn-secundario:hover {
-    background: #d1d5db;
-}
-
-.btn-perigo {
-    background: #fee2e2;
-    color: var(--vermelho);
-}
-
-.btn-perigo:hover {
-    background: #fecaca;
-}
-
-.botoes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-
-/* =========================================================
+/* =========================
    RESUMO
-========================================================= */
+========================= */
 
 .resumo-grid {
+
     display: grid;
+
     grid-template-columns: repeat(3, 1fr);
+
     gap: 15px;
+
     margin-bottom: 20px;
 }
 
+
 .resumo-card {
-    background: white;
+
+    background: var(--branco);
+
     padding: 20px;
-    border-radius: 10px;
+
+    border-radius: 12px;
+
     box-shadow: var(--sombra);
-    border-left: 4px solid #d1d5db;
-    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
 }
+
 
 .resumo-card span {
-    display: block;
+
     color: var(--texto-secundario);
-    font-size: 13px;
-    margin-bottom: 8px;
+
+    font-size: 14px;
 }
+
 
 .resumo-card strong {
-    font-size: 22px;
-    word-break: break-word;
+
+    font-size: 24px;
 }
+
 
 .resumo-card.destaque {
-    border-left-color: var(--verde);
-    background: #f0fdf4;
+
+    background: var(--principal);
+
+    color: white;
 }
+
+
+.resumo-card.destaque span {
+
+    color: #dbeafe;
+}
+
 
 .resumo-card.destaque strong {
-    color: var(--verde);
+
+    font-size: 30px;
 }
 
 
-/* =========================================================
+/* =========================
+   BOTÕES FECHAMENTO
+========================= */
+
+.botoes {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+
+/* =========================
    PERÍODO
-========================================================= */
+========================= */
 
 .periodo-grid {
+
     display: grid;
+
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    max-width: 600px;
-    margin-top: 20px;
+
+    gap: 20px;
 }
 
 
-/* =========================================================
+/* =========================
    SEMANAS
-========================================================= */
+========================= */
 
 .semanas-container {
+
     display: grid;
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(260px, 1fr)
-    );
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
     gap: 15px;
-    margin-top: 20px;
 }
+
 
 .semana-card {
+
     border: 1px solid var(--borda);
+
     border-radius: 10px;
+
     padding: 18px;
-    background: white;
+
+    background: var(--campo-fundo);
 }
+
 
 .semana-card h3 {
-    margin-bottom: 5px;
+
+    margin-top: 0;
 }
 
-.semana-card .datas {
-    color: var(--texto-secundario);
-    font-size: 13px;
-    margin-bottom: 15px;
-}
 
 .semana-info {
+
     display: flex;
+
     justify-content: space-between;
-    gap: 15px;
-    border-top: 1px solid var(--borda);
-    padding-top: 8px;
-    margin-top: 8px;
-    font-size: 13px;
+
+    padding: 6px 0;
+
+    border-bottom: 1px solid var(--borda);
+
+    gap: 10px;
 }
 
+
 .semana-total {
-    font-size: 20px;
-    font-weight: bold;
+
     margin-top: 15px;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
     color: var(--verde);
 }
 
 
-/* =========================================================
+/* =========================
    FOOTER
-========================================================= */
+========================= */
 
 footer {
+
     text-align: center;
-    padding: 30px 15px;
+
+    padding: 25px;
+
     color: var(--texto-secundario);
-    font-size: 13px;
 }
 
 
-/* =========================================================
+footer a {
+
+    color: var(--principal);
+
+    text-decoration: none;
+
+    font-weight: 600;
+}
+
+
+/* =========================
+   NOTIFICAÇÃO
+========================= */
+
+.notificacao {
+
+    position: fixed;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    background: #111827;
+
+    color: white;
+
+    padding: 14px 20px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .2);
+
+    transform: translateY(120px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: .3s ease;
+
+    z-index: 9999;
+}
+
+
+.notificacao.mostrar {
+
+    transform: translateY(0);
+
+    opacity: 1;
+}
+
+
+.notificacao.sucesso {
+
+    background: var(--verde);
+}
+
+
+.notificacao.erro {
+
+    background: var(--vermelho);
+}
+
+
+/* =========================
    TABLET
-   Mantém o visual original
-========================================================= */
+========================= */
 
 @media (max-width: 1100px) {
 
     .form-grid {
-        grid-template-columns: 1fr 1fr;
+
+        grid-template-columns:
+            1fr 1fr;
     }
 
-    .campo-grande {
-        grid-column: span 2;
-    }
 
     .resumo-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
 }
 
 
-/* =========================================================
-   =========================================================
+/* =========================
    CELULAR
-   A PARTIR DAQUI A INTERFACE MUDA
-   =========================================================
-========================================================= */
+========================= */
 
 @media (max-width: 700px) {
 
-    body {
-        font-size: 14px;
-        background: #f4f6f8;
-    }
-
-
-    /* =====================================================
-       TOPO
-    ===================================================== */
-
     .topo {
-        padding: 22px 16px;
+
+        padding: 18px 15px;
     }
+
+
+    .topo-conteudo {
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
 
     .topo h1 {
-        font-size: 22px;
-        line-height: 1.2;
+
+        font-size: 23px;
     }
+
 
     .topo p {
-        font-size: 13px;
-        margin-top: 6px;
+
+        font-size: 14px;
+
+        line-height: 1.4;
     }
 
 
-    /* =====================================================
-       CONTAINER
-    ===================================================== */
+    .btn-tema {
+
+        width: 100%;
+    }
+
 
     .container {
-        margin: 12px auto;
+
+        margin-top: 15px;
+
         padding: 0 10px;
     }
 
 
-    /* =====================================================
-       CARDS
-    ===================================================== */
-
     .card {
+
         padding: 17px;
-        border-radius: 14px;
-        margin-bottom: 14px;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+
+        margin-bottom: 15px;
+
+        border-radius: 10px;
     }
 
-    .card h2 {
-        font-size: 19px;
-    }
-
-
-    /* =====================================================
-       FORMULÁRIO
-    ===================================================== */
 
     .form-grid {
+
         grid-template-columns: 1fr;
+
         gap: 13px;
-        margin-top: 18px;
     }
 
-    .campo-grande {
-        grid-column: auto;
-    }
 
     .valores-padrao {
+
         grid-template-columns: 1fr;
+
         gap: 13px;
-        max-width: none;
-        margin-top: 15px;
-    }
-
-    .campo {
-        gap: 7px;
-    }
-
-    .campo label {
-        font-size: 13px;
-    }
-
-    input,
-    select {
-        height: 48px;
-        font-size: 16px;
-        border-radius: 9px;
-    }
-
-    .input-dinheiro {
-        height: 48px;
-        border-radius: 9px;
-    }
-
-    .input-dinheiro span {
-        padding: 14px;
-        font-size: 14px;
     }
 
 
-    /* =====================================================
-       TÍTULO DO CALENDÁRIO
-    ===================================================== */
+    .acoes-padrao {
 
-    .titulo-secao {
         flex-direction: column;
-        align-items: stretch;
-        gap: 14px;
-        margin-bottom: 16px;
     }
 
-    .titulo-secao h2 {
-        font-size: 20px;
-    }
 
-    .titulo-secao p {
-        font-size: 13px;
-        margin-top: 5px;
-    }
+    .acoes-padrao .btn {
 
-    .titulo-secao .btn {
         width: 100%;
     }
 
 
-    /* =====================================================
-       ESCONDE A TABELA NO CELULAR
-    ===================================================== */
+    .titulo-secao {
 
-    .tabela-container {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 15px;
+    }
+
+
+    .titulo-secao .btn {
+
+        width: 100%;
+    }
+
+
+    .navegacao-meses {
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 8px;
+
+        padding: 10px;
+    }
+
+
+    .navegacao-meses strong {
+
+        grid-column: 1 / -1;
+
+        grid-row: 1;
+
+        min-width: 0;
+
+        padding: 5px;
+    }
+
+
+    .navegacao-meses #btnMesAnterior {
+
+        grid-column: 1;
+
+        grid-row: 2;
+    }
+
+
+    .navegacao-meses #btnProximoMes {
+
+        grid-column: 2;
+
+        grid-row: 2;
+    }
+
+
+    .tabela-desktop {
+
         display: none;
     }
 
 
-    /* =====================================================
-       MOSTRA OS CARDS DOS DIAS
-    ===================================================== */
-
     .dias-mobile {
+
         display: flex;
+
         flex-direction: column;
+
         gap: 12px;
     }
 
 
-    /* =====================================================
-       CARD DE CADA DIA
-    ===================================================== */
+    .dia-card {
 
-    .dia-mobile {
-        background: #ffffff;
         border: 1px solid var(--borda);
-        border-radius: 13px;
+
+        border-radius: 12px;
+
         padding: 15px;
-        box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
-        transition: 0.2s;
-    }
 
-    .dia-mobile.trabalhado {
-        border-left: 4px solid var(--verde);
-    }
+        background: var(--campo-fundo);
 
-    .dia-mobile.nao-trabalhado {
-        border-left: 4px solid #d1d5db;
-        opacity: 0.75;
+        transition: .2s ease;
     }
 
 
-    /* =====================================================
-       CABEÇALHO DO DIA
-    ===================================================== */
+    .dia-card.trabalhado {
 
-    .dia-mobile-header {
+        border-color: rgba(22, 163, 74, .4);
+
+        box-shadow:
+            0 2px 10px rgba(22, 163, 74, .08);
+    }
+
+
+    .dia-cabecalho {
+
         display: flex;
+
         justify-content: space-between;
+
         align-items: center;
+
         gap: 10px;
-        padding-bottom: 13px;
-        margin-bottom: 13px;
-        border-bottom: 1px solid var(--borda);
+
+        margin-bottom: 14px;
     }
 
-    .dia-mobile-data {
+
+    .dia-data {
+
         display: flex;
+
         flex-direction: column;
-        gap: 3px;
-    }
-
-    .dia-mobile-numero {
-        font-size: 20px;
-        font-weight: bold;
-    }
-
-    .dia-mobile-semana {
-        font-size: 13px;
-        color: var(--texto-secundario);
-    }
-
-    .dia-mobile-semana.dia-domingo {
-        color: var(--vermelho);
-    }
-
-    .dia-mobile-semana.dia-sabado {
-        color: #7c3aed;
     }
 
 
-    /* =====================================================
-       CHECKBOX TRABALHOU
-    ===================================================== */
+    .dia-data strong {
 
-    .trabalhou-mobile {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        background: #f3f4f6;
-        padding: 9px 11px;
-        border-radius: 9px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: bold;
-        white-space: nowrap;
-    }
-
-    .trabalhou-mobile input {
-        width: 21px !important;
-        height: 21px !important;
-        min-width: 21px !important;
-        accent-color: var(--verde);
-    }
-
-
-    /* =====================================================
-       CAMPOS DO DIA
-    ===================================================== */
-
-    .dia-mobile-campos {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .dia-mobile-campo {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .dia-mobile-campo label {
-        font-size: 12px;
-        font-weight: bold;
-        color: var(--texto-secundario);
-    }
-
-    .dia-mobile-campo input {
-        height: 46px;
-        text-align: center;
-        font-size: 16px;
-        border-radius: 9px;
-        padding: 0 8px;
-    }
-
-
-    /* =====================================================
-       CAMPOS DE VALOR OCUPAM A LINHA TODA
-    ===================================================== */
-
-    .dia-mobile-campo.largo {
-        grid-column: span 2;
-    }
-
-
-    /* =====================================================
-       TOTAL DO DIA
-    ===================================================== */
-
-    .dia-mobile-total {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-top: 14px;
-        padding-top: 13px;
-        border-top: 1px solid var(--borda);
-    }
-
-    .dia-mobile-total span {
-        font-size: 13px;
-        color: var(--texto-secundario);
-        font-weight: bold;
-    }
-
-    .dia-mobile-total strong {
-        font-size: 20px;
-        color: var(--verde);
-    }
-
-    .dia-mobile.nao-trabalhado .dia-mobile-total strong {
-        color: var(--texto-secundario);
-    }
-
-
-    /* =====================================================
-       RESUMO
-    ===================================================== */
-
-    .resumo-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .resumo-card {
-        padding: 15px 13px;
-        border-radius: 11px;
-    }
-
-    .resumo-card span {
-        font-size: 11px;
-        line-height: 1.3;
-    }
-
-    .resumo-card strong {
         font-size: 18px;
     }
 
-    .resumo-card.destaque {
-        grid-column: span 2;
-        padding: 18px;
+
+    .dia-data span {
+
+        color: var(--texto-secundario);
+
+        font-size: 13px;
     }
+
+
+    .dia-status {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        font-size: 13px;
+
+        font-weight: 600;
+    }
+
+
+    .dia-status input {
+
+        width: 20px;
+
+        height: 20px;
+    }
+
+
+    .dia-grid {
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 12px;
+    }
+
+
+    .dia-grid .campo {
+
+        gap: 5px;
+    }
+
+
+    .dia-grid label {
+
+        font-size: 12px;
+
+        color: var(--texto-secundario);
+    }
+
+
+    .dia-total {
+
+        margin-top: 14px;
+
+        padding-top: 12px;
+
+        border-top: 1px solid var(--borda);
+
+        display: flex;
+
+        justify-content: space-between;
+
+        align-items: center;
+    }
+
+
+    .dia-total strong {
+
+        color: var(--verde);
+
+        font-size: 18px;
+    }
+
+
+    .btn-copiar {
+
+        margin-top: 12px;
+
+        width: 100%;
+    }
+
+
+    .resumo-grid {
+
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+
+    .resumo-card {
+
+        padding: 16px;
+    }
+
+
+    .resumo-card strong {
+
+        font-size: 22px;
+    }
+
 
     .resumo-card.destaque strong {
-        font-size: 24px;
+
+        font-size: 27px;
     }
 
-
-    /* =====================================================
-       FECHAMENTO
-    ===================================================== */
-
-    .fechamento h2 {
-        margin-bottom: 5px;
-    }
 
     .botoes {
-        display: flex;
+
         flex-direction: column;
-        gap: 10px;
-        margin-top: 16px;
     }
 
-    .btn {
+
+    .botoes .btn {
+
         width: 100%;
-        min-height: 48px;
-        font-size: 14px;
-        border-radius: 9px;
     }
 
-
-    /* =====================================================
-       PERÍODO
-    ===================================================== */
 
     .periodo-grid {
+
         grid-template-columns: 1fr;
-        max-width: none;
+
         gap: 13px;
     }
 
 
-    /* =====================================================
-       SEMANAS
-    ===================================================== */
-
     .semanas-container {
+
         grid-template-columns: 1fr;
-        gap: 11px;
-    }
-
-    .semana-card {
-        padding: 16px;
-        border-radius: 11px;
-    }
-
-    .semana-card h3 {
-        font-size: 17px;
-    }
-
-    .semana-info {
-        padding-top: 10px;
-        margin-top: 10px;
-    }
-
-    .semana-total {
-        font-size: 21px;
     }
 
 
-    /* =====================================================
-       FOOTER
-    ===================================================== */
+    .notificacao {
 
-    footer {
-        padding: 25px 15px;
+        left: 12px;
+
+        right: 12px;
+
+        bottom: 12px;
+
+        text-align: center;
     }
 
 }
 
 
-/* =========================================================
-   CELULARES MUITO PEQUENOS
-========================================================= */
+/* =========================
+   CELULAR PEQUENO
+========================= */
 
 @media (max-width: 400px) {
 
-    .topo h1 {
-        font-size: 20px;
+    .dia-grid {
+
+        grid-template-columns: 1fr;
     }
 
+
     .card {
+
         padding: 14px;
     }
 
-    .resumo-grid {
-        grid-template-columns: 1fr;
+
+    .navegacao-meses .btn {
+
+        padding: 9px 7px;
+
+        font-size: 12px;
     }
 
-    .resumo-card {
-        padding: 15px;
-    }
+}
 
-    .resumo-card.destaque {
-        grid-column: auto;
-    }
 
-    .resumo-card strong {
-        font-size: 20px;
-    }
+/* =========================
+   MODO ESCURO
+========================= */
 
-    .dia-mobile-campos {
-        grid-template-columns: 1fr;
-    }
+body.modo-escuro {
 
-    .dia-mobile-campo.largo {
-        grid-column: auto;
-    }
+    --fundo: #0f172a;
 
-    .dia-mobile-header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
+    --branco: #1e293b;
 
-    .trabalhou-mobile {
-        width: 100%;
-        justify-content: center;
+    --texto: #f1f5f9;
+
+    --texto-secundario: #94a3b8;
+
+    --borda: #334155;
+
+    --cinza: #263449;
+
+    --campo-fundo: #172235;
+
+    --sombra:
+        0 4px 18px rgba(0, 0, 0, .25);
+}
+
+
+body.modo-escuro .topo {
+
+    background: #020617;
+}
+
+
+body.modo-escuro .btn-tema {
+
+    background: #f1f5f9;
+
+    color: #0f172a;
+}
+
+
+body.modo-escuro input::placeholder {
+
+    color: #64748b;
+}
+
+
+/* =========================
+   IMPRESSÃO
+========================= */
+
+@media print {
+
+    .topo,
+    .btn,
+    footer,
+    .botoes,
+    .navegacao-meses {
+
+        display: none !important;
     }
 
 }

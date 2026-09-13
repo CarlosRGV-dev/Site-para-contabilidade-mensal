@@ -1,10 +1,6 @@
 /* =========================================================
    CONTROLE DE PAGAMENTOS
-========================================================= */
-
-
-/* =========================================================
-   CONFIGURAÇÕES
+   JavaScript principal
 ========================================================= */
 
 const MESES = [
@@ -33,6 +29,7 @@ const DIAS_SEMANA = [
 ];
 
 const STORAGE_KEY = "controlePagamentos";
+const TEMA_KEY = "controlePagamentosTema";
 
 
 /* =========================================================
@@ -42,716 +39,316 @@ const STORAGE_KEY = "controlePagamentos";
 const nomeInput = document.getElementById("nome");
 const anoInput = document.getElementById("ano");
 const mesInput = document.getElementById("mes");
+const tipoPagamentoInput = document.getElementById("tipoPagamento");
 
-const tipoPagamentoInput =
-    document.getElementById("tipoPagamento");
+const diariaPadraoInput = document.getElementById("diariaPadrao");
+const horaExtraPadraoInput = document.getElementById("horaExtraPadrao");
 
-const diariaPadraoInput =
-    document.getElementById("diariaPadrao");
+const tabelaDias = document.getElementById("tabelaDias");
+const diasMobile = document.getElementById("diasMobile");
 
-const horaExtraPadraoInput =
-    document.getElementById("horaExtraPadrao");
+const tituloCalendario = document.getElementById("tituloCalendario");
+const mesNavegacao = document.getElementById("mesNavegacao");
 
-const tabelaDias =
-    document.getElementById("tabelaDias");
+const semanasContainer = document.getElementById("semanasContainer");
 
-const diasMobile =
-    document.getElementById("diasMobile");
+const dataInicioInput = document.getElementById("dataInicio");
+const dataFimInput = document.getElementById("dataFim");
 
-const tituloCalendario =
-    document.getElementById("tituloCalendario");
+const totalDiasElement = document.getElementById("totalDias");
+const totalHorasElement = document.getElementById("totalHoras");
+const totalHorasExtrasElement = document.getElementById("totalHorasExtras");
+const totalDiariasElement = document.getElementById("totalDiarias");
+const totalExtrasElement = document.getElementById("totalExtras");
+const totalGeralElement = document.getElementById("totalGeral");
 
-const semanasContainer =
-    document.getElementById("semanasContainer");
+const notificacao = document.getElementById("notificacao");
+const notificacaoTexto = document.getElementById("notificacaoTexto");
 
-const dataInicioInput =
-    document.getElementById("dataInicio");
-
-const dataFimInput =
-    document.getElementById("dataFim");
-
-
-/* =========================================================
-   RESUMO
-========================================================= */
-
-const totalDiasElement =
-    document.getElementById("totalDias");
-
-const totalHorasElement =
-    document.getElementById("totalHoras");
-
-const totalHorasExtrasElement =
-    document.getElementById("totalHorasExtras");
-
-const totalDiariasElement =
-    document.getElementById("totalDiarias");
-
-const totalExtrasElement =
-    document.getElementById("totalExtras");
-
-const totalGeralElement =
-    document.getElementById("totalGeral");
+const btnTema = document.getElementById("btnTema");
 
 
 /* =========================================================
-   ESTADO
+   DADOS ATUAIS
 ========================================================= */
 
 let dadosDias = {};
 
 
 /* =========================================================
-   UTILITÁRIOS
+   UTILIDADES
 ========================================================= */
 
-function dinheiro(valor) {
+function numero(valor) {
+    const resultado = Number(valor);
 
-    return Number(valor || 0).toLocaleString(
-        "pt-BR",
-        {
-            style: "currency",
-            currency: "BRL"
-        }
-    );
-
+    return Number.isNaN(resultado)
+        ? 0
+        : resultado;
 }
 
 
-function numero(valor) {
-
-    const resultado = Number(valor);
-
-    return isNaN(resultado) ? 0 : resultado;
-
+function dinheiro(valor) {
+    return numero(valor).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
 }
 
 
 function chaveMes() {
+    return `${Number(anoInput.value)}-${Number(mesInput.value)}`;
+}
 
-    return `${anoInput.value}-${mesInput.value}`;
 
+function chaveMesData(ano, mes) {
+    return `${Number(ano)}-${Number(mes)}`;
 }
 
 
 function criarChaveDia(ano, mes, dia) {
-
     return `${ano}-${String(Number(mes) + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-
 }
 
 
 function diasNoMes(ano, mes) {
-
     return new Date(
-        ano,
+        Number(ano),
         Number(mes) + 1,
         0
     ).getDate();
-
 }
 
 
 function formatarData(data) {
-
     const dia = String(data.getDate()).padStart(2, "0");
     const mes = String(data.getMonth() + 1).padStart(2, "0");
     const ano = data.getFullYear();
 
     return `${dia}/${mes}/${ano}`;
-
 }
 
 
 function dataParaInput(data) {
-
     const dia = String(data.getDate()).padStart(2, "0");
     const mes = String(data.getMonth() + 1).padStart(2, "0");
     const ano = data.getFullYear();
 
     return `${ano}-${mes}-${dia}`;
-
 }
 
 
 function escaparHTML(texto) {
-
     return String(texto)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-
 }
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   HORAS
 ========================================================= */
 
-function inicializar() {
+/*
+   Converte minutos para HH:MM
 
-    const agora = new Date();
+   Exemplo:
+   480 -> 08:00
+   510 -> 08:30
+*/
+function minutosParaHora(minutos) {
+    minutos = Math.max(
+        0,
+        Math.round(numero(minutos))
+    );
 
-    anoInput.value = agora.getFullYear();
-    mesInput.value = agora.getMonth();
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
 
-    carregarDados();
+    return `${String(horas).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
 
-    gerarCalendario();
 
-    atualizarResumo();
+/*
+   Converte:
 
-    gerarResumoSemanal();
+   08:00 -> 480
+   08:30 -> 510
+   8 -> 480
 
+   Também mantém compatibilidade com
+   valores decimais antigos.
+*/
+function horaParaMinutos(valor) {
+
+    if (valor === undefined || valor === null || valor === "") {
+        return 0;
+    }
+
+    const texto = String(valor).trim();
+
+    if (texto.includes(":")) {
+
+        const partes = texto.split(":");
+
+        const horas = numero(partes[0]);
+        const minutos = numero(partes[1]);
+
+        return Math.max(
+            0,
+            Math.round(horas * 60 + minutos)
+        );
+    }
+
+    return Math.max(
+        0,
+        Math.round(numero(texto) * 60)
+    );
+}
+
+
+function formatarHoras(minutos) {
+
+    minutos = Math.max(
+        0,
+        Math.round(numero(minutos))
+    );
+
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+
+    if (mins === 0) {
+        return `${horas}h`;
+    }
+
+    return `${horas}h ${mins}min`;
 }
 
 
 /* =========================================================
-   GERAR CALENDÁRIO
+   NOTIFICAÇÃO
 ========================================================= */
 
-function gerarCalendario() {
+let notificacaoTimeout = null;
 
-    const ano = numero(anoInput.value);
-    const mes = numero(mesInput.value);
+function mostrarNotificacao(mensagem, tipo = "sucesso") {
 
-    if (!ano) {
+    if (!notificacao || !notificacaoTexto) {
         return;
     }
 
-    tituloCalendario.textContent =
-        `${MESES[mes]} de ${ano}`;
+    notificacaoTexto.textContent = mensagem;
 
-    tabelaDias.innerHTML = "";
-    diasMobile.innerHTML = "";
+    notificacao.classList.remove(
+        "mostrar",
+        "sucesso",
+        "erro"
+    );
 
-    const quantidadeDias =
-        diasNoMes(ano, mes);
+    notificacao.classList.add(
+        tipo,
+        "mostrar"
+    );
 
-    for (let dia = 1; dia <= quantidadeDias; dia++) {
+    clearTimeout(notificacaoTimeout);
 
-        const data = new Date(
-            ano,
-            mes,
-            dia
-        );
+    notificacaoTimeout = setTimeout(() => {
 
-        const diaSemana = data.getDay();
+        notificacao.classList.remove("mostrar");
 
-        const chave =
-            criarChaveDia(ano, mes, dia);
-
-        if (!dadosDias[chave]) {
-
-            dadosDias[chave] = {
-                trabalhou: false,
-                horas: 0,
-                horasExtras: 0,
-                valorHoraExtra:
-                    numero(horaExtraPadraoInput.value),
-                diaria:
-                    numero(diariaPadraoInput.value)
-            };
-
-        }
-
-        const dados = dadosDias[chave];
-
-
-        /* =================================================
-           TABELA DESKTOP
-        ================================================= */
-
-        const tr = document.createElement("tr");
-
-        if (!dados.trabalhou) {
-            tr.classList.add("linha-nao-trabalhou");
-        }
-
-        let classeDia = "";
-
-        if (diaSemana === 0) {
-            classeDia = "dia-domingo";
-        }
-
-        if (diaSemana === 6) {
-            classeDia = "dia-sabado";
-        }
-
-        tr.innerHTML = `
-
-            <td>
-                ${String(dia).padStart(2, "0")}/${String(mes + 1).padStart(2, "0")}/${ano}
-            </td>
-
-            <td class="${classeDia}">
-                <strong>
-                    ${DIAS_SEMANA[diaSemana]}
-                </strong>
-            </td>
-
-            <td>
-                <input
-                    type="checkbox"
-                    class="checkbox"
-                    data-chave="${chave}"
-                    data-campo="trabalhou"
-                    ${dados.trabalhou ? "checked" : ""}
-                >
-            </td>
-
-            <td>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    class="input-pequeno"
-                    data-chave="${chave}"
-                    data-campo="horas"
-                    value="${dados.horas}"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    class="input-pequeno"
-                    data-chave="${chave}"
-                    data-campo="horasExtras"
-                    value="${dados.horasExtras}"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="input-dinheiro-dia"
-                    data-chave="${chave}"
-                    data-campo="valorHoraExtra"
-                    value="${dados.valorHoraExtra}"
-                >
-            </td>
-
-            <td>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="input-dinheiro-dia"
-                    data-chave="${chave}"
-                    data-campo="diaria"
-                    value="${dados.diaria}"
-                >
-            </td>
-
-            <td class="total-dia">
-                ${calcularTotalDia(dados)}
-            </td>
-
-        `;
-
-        tabelaDias.appendChild(tr);
-
-
-        /* =================================================
-           CARD MOBILE
-        ================================================= */
-
-        const cardMobile =
-            document.createElement("div");
-
-        cardMobile.className =
-            `dia-mobile ${
-                dados.trabalhou
-                    ? "trabalhado"
-                    : "nao-trabalhado"
-            }`;
-
-        cardMobile.dataset.chave = chave;
-
-        cardMobile.innerHTML = `
-
-            <div class="dia-mobile-header">
-
-                <div class="dia-mobile-data">
-
-                    <span class="dia-mobile-numero">
-                        ${String(dia).padStart(2, "0")}/${String(mes + 1).padStart(2, "0")}
-                    </span>
-
-                    <span class="dia-mobile-semana ${classeDia}">
-                        ${DIAS_SEMANA[diaSemana]}
-                    </span>
-
-                </div>
-
-                <label class="trabalhou-mobile">
-
-                    <input
-                        type="checkbox"
-                        data-chave="${chave}"
-                        data-campo="trabalhou"
-                        ${dados.trabalhou ? "checked" : ""}
-                    >
-
-                    Trabalhou
-
-                </label>
-
-            </div>
-
-
-            <div class="dia-mobile-campos">
-
-                <div class="dia-mobile-campo">
-
-                    <label>
-                        Horas trabalhadas
-                    </label>
-
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        data-chave="${chave}"
-                        data-campo="horas"
-                        value="${dados.horas}"
-                    >
-
-                </div>
-
-
-                <div class="dia-mobile-campo">
-
-                    <label>
-                        Horas extras
-                    </label>
-
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        data-chave="${chave}"
-                        data-campo="horasExtras"
-                        value="${dados.horasExtras}"
-                    >
-
-                </div>
-
-
-                <div class="dia-mobile-campo largo">
-
-                    <label>
-                        Valor por hora extra
-                    </label>
-
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-chave="${chave}"
-                        data-campo="valorHoraExtra"
-                        value="${dados.valorHoraExtra}"
-                    >
-
-                </div>
-
-
-                <div class="dia-mobile-campo largo">
-
-                    <label>
-                        Diária
-                    </label>
-
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        data-chave="${chave}"
-                        data-campo="diaria"
-                        value="${dados.diaria}"
-                    >
-
-                </div>
-
-            </div>
-
-
-            <div class="dia-mobile-total">
-
-                <span>
-                    Total do dia
-                </span>
-
-                <strong class="total-mobile">
-                    ${calcularTotalDia(dados)}
-                </strong>
-
-            </div>
-
-        `;
-
-        diasMobile.appendChild(cardMobile);
-
-    }
-
-
-    adicionarEventosTabela();
-
-    adicionarEventosMobile();
-
+    }, 3000);
 }
 
 
 /* =========================================================
-   EVENTOS DA TABELA DESKTOP
+   DADOS DOS DIAS
 ========================================================= */
 
-function adicionarEventosTabela() {
+function dadosDiaPadrao() {
 
-    const inputs =
-        tabelaDias.querySelectorAll("input");
+    return {
+        trabalhou: false,
 
-    inputs.forEach(input => {
+        minutos: 0,
 
-        input.addEventListener(
-            "input",
-            alterarDia
-        );
+        minutosExtras: 0,
 
-        input.addEventListener(
-            "change",
-            alterarDia
-        );
+        valorHoraExtra:
+            numero(horaExtraPadraoInput.value),
 
-    });
-
+        diaria:
+            numero(diariaPadraoInput.value)
+    };
 }
 
 
-/* =========================================================
-   EVENTOS DOS CARDS MOBILE
-========================================================= */
-
-function adicionarEventosMobile() {
-
-    const inputs =
-        diasMobile.querySelectorAll("input");
-
-    inputs.forEach(input => {
-
-        input.addEventListener(
-            "input",
-            alterarDiaMobile
-        );
-
-        input.addEventListener(
-            "change",
-            alterarDiaMobile
-        );
-
-    });
-
-}
-
-
-/* =========================================================
-   ALTERAR DIA - DESKTOP
-========================================================= */
-
-function alterarDia(evento) {
-
-    const input = evento.target;
-
-    const chave = input.dataset.chave;
-    const campo = input.dataset.campo;
+function obterDadosDia(chave) {
 
     if (!dadosDias[chave]) {
-        dadosDias[chave] = {};
+        dadosDias[chave] = dadosDiaPadrao();
     }
 
-    if (campo === "trabalhou") {
+    const dados = dadosDias[chave];
 
-        dadosDias[chave][campo] =
-            input.checked;
 
-    } else {
+    /*
+       Compatibilidade com a versão antiga
+       que usava "horas" e "horasExtras".
+    */
 
-        dadosDias[chave][campo] =
-            numero(input.value);
+    if (
+        dados.minutos === undefined &&
+        dados.horas !== undefined
+    ) {
 
+        dados.minutos =
+            Math.round(numero(dados.horas) * 60);
     }
 
-    atualizarLinha(input);
 
-    atualizarCardMobile(chave);
+    if (
+        dados.minutosExtras === undefined &&
+        dados.horasExtras !== undefined
+    ) {
 
-    atualizarResumo();
-
-    gerarResumoSemanal();
-
-    salvarDados(false);
-
-}
-
-
-/* =========================================================
-   ALTERAR DIA - MOBILE
-========================================================= */
-
-function alterarDiaMobile(evento) {
-
-    const input = evento.target;
-
-    const chave = input.dataset.chave;
-    const campo = input.dataset.campo;
-
-    if (!dadosDias[chave]) {
-        dadosDias[chave] = {};
+        dados.minutosExtras =
+            Math.round(numero(dados.horasExtras) * 60);
     }
 
-    if (campo === "trabalhou") {
 
-        dadosDias[chave][campo] =
-            input.checked;
-
-    } else {
-
-        dadosDias[chave][campo] =
-            numero(input.value);
-
+    if (dados.minutos === undefined) {
+        dados.minutos = 0;
     }
 
-    atualizarCardMobile(chave);
 
-    atualizarLinhaDesktop(chave);
-
-    atualizarResumo();
-
-    gerarResumoSemanal();
-
-    salvarDados(false);
-
-}
-
-
-/* =========================================================
-   ATUALIZAR LINHA DESKTOP
-========================================================= */
-
-function atualizarLinha(input) {
-
-    const linha =
-        input.closest("tr");
-
-    const chave =
-        input.dataset.chave;
-
-    atualizarLinhaDesktop(chave, linha);
-
-}
-
-
-function atualizarLinhaDesktop(chave, linhaInformada = null) {
-
-    const dados =
-        dadosDias[chave];
-
-    if (!dados) {
-        return;
+    if (dados.minutosExtras === undefined) {
+        dados.minutosExtras = 0;
     }
 
-    const linha =
-        linhaInformada ||
-        tabelaDias.querySelector(
-            `tr input[data-chave="${chave}"]`
-        )?.closest("tr");
 
-    if (!linha) {
-        return;
+    if (dados.trabalhou === undefined) {
+        dados.trabalhou = false;
     }
 
-    const total =
-        linha.querySelector(".total-dia");
 
-    if (total) {
+    if (dados.valorHoraExtra === undefined) {
 
-        total.textContent =
-            calcularTotalDia(dados);
-
+        dados.valorHoraExtra =
+            numero(horaExtraPadraoInput.value);
     }
 
-    if (dados.trabalhou) {
 
-        linha.classList.remove(
-            "linha-nao-trabalhou"
-        );
+    if (dados.diaria === undefined) {
 
-    } else {
-
-        linha.classList.add(
-            "linha-nao-trabalhou"
-        );
-
+        dados.diaria =
+            numero(diariaPadraoInput.value);
     }
 
-}
 
-
-/* =========================================================
-   ATUALIZAR CARD MOBILE
-========================================================= */
-
-function atualizarCardMobile(chave) {
-
-    const card =
-        diasMobile.querySelector(
-            `.dia-mobile[data-chave="${chave}"]`
-        );
-
-    if (!card) {
-        return;
-    }
-
-    const dados =
-        dadosDias[chave];
-
-    const total =
-        card.querySelector(".total-mobile");
-
-    if (total) {
-
-        total.textContent =
-            calcularTotalDia(dados);
-
-    }
-
-    if (dados.trabalhou) {
-
-        card.classList.add("trabalhado");
-
-        card.classList.remove(
-            "nao-trabalhado"
-        );
-
-    } else {
-
-        card.classList.remove(
-            "trabalhado"
-        );
-
-        card.classList.add(
-            "nao-trabalhado"
-        );
-
-    }
-
+    return dados;
 }
 
 
@@ -759,127 +356,66 @@ function atualizarCardMobile(chave) {
    CÁLCULO DO DIA
 ========================================================= */
 
-function calcularTotalDia(dados) {
+function calcularValorDia(dados) {
 
     if (!dados.trabalhou) {
-        return dinheiro(0);
+        return 0;
     }
 
     const diaria =
         numero(dados.diaria);
 
     const horasExtras =
-        numero(dados.horasExtras);
+        numero(dados.minutosExtras) / 60;
 
     const valorHoraExtra =
         numero(dados.valorHoraExtra);
 
-    const totalExtras =
+    return diaria +
         horasExtras * valorHoraExtra;
+}
+
+
+function calcularTotalDia(dados) {
 
     return dinheiro(
-        diaria + totalExtras
+        calcularValorDia(dados)
     );
-
 }
 
 
 /* =========================================================
-   ATUALIZAR RESUMO
+   LOCAL STORAGE
 ========================================================= */
 
-function atualizarResumo() {
+function obterBanco() {
 
-    const ano = numero(anoInput.value);
-    const mes = numero(mesInput.value);
+    try {
 
-    const quantidadeDias =
-        diasNoMes(ano, mes);
-
-    let diasTrabalhados = 0;
-    let horasTrabalhadas = 0;
-    let horasExtras = 0;
-    let totalDiarias = 0;
-    let totalExtras = 0;
-
-    for (
-        let dia = 1;
-        dia <= quantidadeDias;
-        dia++
-    ) {
-
-        const chave =
-            criarChaveDia(ano, mes, dia);
-
-        const dados =
-            dadosDias[chave];
-
-        if (!dados) {
-            continue;
-        }
-
-        if (dados.trabalhou) {
-
-            diasTrabalhados++;
-
-            horasTrabalhadas +=
-                numero(dados.horas);
-
-            horasExtras +=
-                numero(dados.horasExtras);
-
-            totalDiarias +=
-                numero(dados.diaria);
-
-            totalExtras +=
-                numero(dados.horasExtras) *
-                numero(dados.valorHoraExtra);
-
-        }
-
-    }
-
-    const totalGeral =
-        totalDiarias + totalExtras;
-
-    totalDiasElement.textContent =
-        diasTrabalhados;
-
-    totalHorasElement.textContent =
-        `${horasTrabalhadas}h`;
-
-    totalHorasExtrasElement.textContent =
-        `${horasExtras}h`;
-
-    totalDiariasElement.textContent =
-        dinheiro(totalDiarias);
-
-    totalExtrasElement.textContent =
-        dinheiro(totalExtras);
-
-    totalGeralElement.textContent =
-        dinheiro(totalGeral);
-
-}
-
-
-/* =========================================================
-   SALVAR DADOS
-========================================================= */
-
-function salvarDados(mostrarMensagem = true) {
-
-    const banco =
-        JSON.parse(
+        return JSON.parse(
             localStorage.getItem(STORAGE_KEY) || "{}"
         );
 
-    const chave =
-        chaveMes();
+    } catch (erro) {
 
-    banco[chave] = {
+        console.error(
+            "Erro ao ler dados:",
+            erro
+        );
 
-        nome: nomeInput.value,
+        return {};
+    }
+}
+
+
+function salvarDados(silencioso = false) {
+
+    const banco = obterBanco();
+
+    banco[chaveMes()] = {
+
+        nome:
+            nomeInput.value,
 
         tipoPagamento:
             tipoPagamentoInput.value,
@@ -892,183 +428,149 @@ function salvarDados(mostrarMensagem = true) {
 
         dias:
             dadosDias
-
     };
+
 
     localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify(banco)
     );
 
-    if (mostrarMensagem) {
 
-        alert(
-            "Dados salvos com sucesso!"
+    if (!silencioso) {
+
+        mostrarNotificacao(
+            "Dados salvos com sucesso!",
+            "sucesso"
         );
-
     }
-
 }
 
 
-/* =========================================================
-   CARREGAR DADOS
-========================================================= */
-
 function carregarDados() {
 
-    const banco =
-        JSON.parse(
-            localStorage.getItem(STORAGE_KEY) || "{}"
-        );
+    const banco = obterBanco();
 
-    const chave =
-        chaveMes();
+    const dados =
+        banco[chaveMes()];
 
-    if (!banco[chave]) {
+
+    /*
+       Se o mês ainda não possui dados,
+       começamos um mês limpo.
+    */
+
+    if (!dados) {
 
         dadosDias = {};
 
-        return;
+        nomeInput.value = "";
 
+        tipoPagamentoInput.value =
+            "mensal";
+
+        diariaPadraoInput.value = 0;
+
+        horaExtraPadraoInput.value = 0;
+
+        return;
     }
 
-    const dados =
-        banco[chave];
 
     nomeInput.value =
         dados.nome || "";
 
+
     tipoPagamentoInput.value =
         dados.tipoPagamento || "mensal";
 
+
     diariaPadraoInput.value =
-        dados.diariaPadrao || 0;
+        dados.diariaPadrao ?? 0;
+
 
     horaExtraPadraoInput.value =
-        dados.horaExtraPadrao || 0;
+        dados.horaExtraPadrao ?? 0;
+
 
     dadosDias =
         dados.dias || {};
-
 }
 
 
 /* =========================================================
-   MUDAR MÊS
+   DATAS DO PERÍODO
 ========================================================= */
 
-function mudarMes() {
-
-    salvarDados(false);
-
-    carregarDados();
-
-    gerarCalendario();
-
-    atualizarResumo();
-
-    gerarResumoSemanal();
-
-}
-
-
-/* =========================================================
-   APLICAR VALORES PADRÃO
-========================================================= */
-
-diariaPadraoInput.addEventListener(
-    "change",
-    function() {
-
-        const valor =
-            numero(this.value);
-
-        const confirmar =
-            confirm(
-                "Deseja aplicar este valor de diária a todos os dias do mês?"
-            );
-
-        if (!confirmar) {
-            return;
-        }
-
-        Object.keys(dadosDias).forEach(chave => {
-
-            dadosDias[chave].diaria =
-                valor;
-
-        });
-
-        gerarCalendario();
-
-        atualizarResumo();
-
-        gerarResumoSemanal();
-
-        salvarDados(false);
-
-    }
-);
-
-
-horaExtraPadraoInput.addEventListener(
-    "change",
-    function() {
-
-        const valor =
-            numero(this.value);
-
-        const confirmar =
-            confirm(
-                "Deseja aplicar este valor de hora extra a todos os dias do mês?"
-            );
-
-        if (!confirmar) {
-            return;
-        }
-
-        Object.keys(dadosDias).forEach(chave => {
-
-            dadosDias[chave].valorHoraExtra =
-                valor;
-
-        });
-
-        gerarCalendario();
-
-        atualizarResumo();
-
-        gerarResumoSemanal();
-
-        salvarDados(false);
-
-    }
-);
-
-
-/* =========================================================
-   RESUMO SEMANAL
-========================================================= */
-
-function gerarResumoSemanal() {
+function definirDatasPeriodo() {
 
     const ano =
-        numero(anoInput.value);
+        Number(anoInput.value);
 
     const mes =
-        numero(mesInput.value);
+        Number(mesInput.value);
 
-    semanasContainer.innerHTML = "";
 
-    const quantidadeDias =
-        diasNoMes(ano, mes);
+    const inicio =
+        new Date(
+            ano,
+            mes,
+            1
+        );
 
-    const semanas = {};
+
+    const fim =
+        new Date(
+            ano,
+            mes + 1,
+            0
+        );
+
+
+    dataInicioInput.value =
+        dataParaInput(inicio);
+
+    dataFimInput.value =
+        dataParaInput(fim);
+}
+
+
+/* =========================================================
+   CALENDÁRIO
+========================================================= */
+
+function gerarCalendario() {
+
+    tabelaDias.innerHTML = "";
+
+    diasMobile.innerHTML = "";
+
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    tituloCalendario.textContent =
+        `${MESES[mes]} de ${ano}`;
+
+
+    mesNavegacao.textContent =
+        `${MESES[mes]} ${ano}`;
+
 
     for (
         let dia = 1;
-        dia <= quantidadeDias;
+        dia <= quantidade;
         dia++
     ) {
 
@@ -1079,155 +581,6 @@ function gerarResumoSemanal() {
                 dia
             );
 
-        const indiceSemana =
-            (data.getDay() + 6) % 7;
-
-        const segunda =
-            new Date(data);
-
-        segunda.setDate(
-            data.getDate() -
-            indiceSemana
-        );
-
-        const chave =
-            dataParaInput(segunda);
-
-        if (!semanas[chave]) {
-
-            semanas[chave] = {
-                inicio: segunda,
-                dias: []
-            };
-
-        }
-
-        semanas[chave].dias.push(data);
-
-    }
-
-
-    Object.values(semanas).forEach(
-        (semana, index) => {
-
-            let diasTrabalhados = 0;
-            let horas = 0;
-            let extras = 0;
-            let total = 0;
-
-            semana.dias.forEach(data => {
-
-                const chave =
-                    criarChaveDia(
-                        data.getFullYear(),
-                        data.getMonth(),
-                        data.getDate()
-                    );
-
-                const dados =
-                    dadosDias[chave];
-
-                if (!dados || !dados.trabalhou) {
-                    return;
-                }
-
-                diasTrabalhados++;
-
-                horas +=
-                    numero(dados.horas);
-
-                extras +=
-                    numero(dados.horasExtras);
-
-                total +=
-                    numero(dados.diaria) +
-                    (
-                        numero(dados.horasExtras) *
-                        numero(dados.valorHoraExtra)
-                    );
-
-            });
-
-
-            const fim =
-                new Date(semana.inicio);
-
-            fim.setDate(
-                semana.inicio.getDate() + 6
-            );
-
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "semana-card";
-
-            card.innerHTML = `
-
-                <h3>
-                    Semana ${index + 1}
-                </h3>
-
-                <div class="datas">
-                    ${formatarData(semana.inicio)}
-                    →
-                    ${formatarData(fim)}
-                </div>
-
-                <div class="semana-info">
-                    <span>Dias trabalhados</span>
-                    <strong>${diasTrabalhados}</strong>
-                </div>
-
-                <div class="semana-info">
-                    <span>Horas</span>
-                    <strong>${horas}h</strong>
-                </div>
-
-                <div class="semana-info">
-                    <span>Horas extras</span>
-                    <strong>${extras}h</strong>
-                </div>
-
-                <div class="semana-total">
-                    ${dinheiro(total)}
-                </div>
-
-            `;
-
-            semanasContainer.appendChild(card);
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   GERAR PDF
-========================================================= */
-
-function obterDadosPeriodo(dataInicio, dataFim) {
-
-    const registros = [];
-
-    let dataAtual =
-        new Date(dataInicio);
-
-    const fim =
-        new Date(dataFim);
-
-    while (dataAtual <= fim) {
-
-        const ano =
-            dataAtual.getFullYear();
-
-        const mes =
-            dataAtual.getMonth();
-
-        const dia =
-            dataAtual.getDate();
 
         const chave =
             criarChaveDia(
@@ -1236,30 +589,1961 @@ function obterDadosPeriodo(dataInicio, dataFim) {
                 dia
             );
 
+
         const dados =
-            dadosDias[chave];
+            obterDadosDia(chave);
 
-        if (dados) {
 
-            registros.push({
-
-                data:
-                    new Date(dataAtual),
-
-                dados
-
-            });
-
-        }
-
-        dataAtual.setDate(
-            dataAtual.getDate() + 1
+        criarLinhaDesktop(
+            data,
+            chave,
+            dados
         );
+
+
+        criarCardMobile(
+            data,
+            chave,
+            dados
+        );
+    }
+}
+
+
+/* =========================================================
+   LINHA DESKTOP
+========================================================= */
+
+function criarLinhaDesktop(
+    data,
+    chave,
+    dados
+) {
+
+    const tr =
+        document.createElement("tr");
+
+
+    tr.dataset.chave =
+        chave;
+
+
+    if (dados.trabalhou) {
+
+        tr.classList.add(
+            "linha-trabalhou"
+        );
+
+    } else {
+
+        tr.classList.add(
+            "linha-nao-trabalhou"
+        );
+    }
+
+
+    const classeDia =
+        data.getDay() === 0
+            ? "dia-domingo"
+            : data.getDay() === 6
+                ? "dia-sabado"
+                : "";
+
+
+    tr.innerHTML = `
+
+        <td>
+            ${formatarData(data)}
+        </td>
+
+        <td class="${classeDia}">
+            ${DIAS_SEMANA[data.getDay()]}
+        </td>
+
+        <td>
+
+            <input
+                type="checkbox"
+                class="checkbox"
+                data-campo="trabalhou"
+                ${dados.trabalhou ? "checked" : ""}
+            >
+
+        </td>
+
+        <td>
+
+            <input
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="08:00"
+                value="${minutosParaHora(dados.minutos)}"
+                data-campo="minutos"
+            >
+
+        </td>
+
+        <td>
+
+            <input
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="00:00"
+                value="${minutosParaHora(dados.minutosExtras)}"
+                data-campo="minutosExtras"
+            >
+
+        </td>
+
+        <td>
+
+            <div class="input-dinheiro">
+
+                <span>R$</span>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="${dados.valorHoraExtra}"
+                    data-campo="valorHoraExtra"
+                >
+
+            </div>
+
+        </td>
+
+        <td>
+
+            <div class="input-dinheiro">
+
+                <span>R$</span>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="${dados.diaria}"
+                    data-campo="diaria"
+                >
+
+            </div>
+
+        </td>
+
+        <td class="total-dia">
+
+            ${calcularTotalDia(dados)}
+
+        </td>
+    `;
+
+
+    adicionarEventosDia(
+        tr,
+        chave
+    );
+
+
+    tabelaDias.appendChild(tr);
+}
+
+
+/* =========================================================
+   CARD MOBILE
+========================================================= */
+
+function criarCardMobile(
+    data,
+    chave,
+    dados
+) {
+
+    const card =
+        document.createElement("div");
+
+
+    card.className =
+        "dia-mobile";
+
+
+    card.dataset.chave =
+        chave;
+
+
+    if (dados.trabalhou) {
+
+        card.classList.add(
+            "trabalhado"
+        );
+
+    } else {
+
+        card.classList.add(
+            "nao-trabalhado"
+        );
+    }
+
+
+    let classeSemana = "";
+
+    if (data.getDay() === 0) {
+        classeSemana = "dia-domingo";
+    }
+
+    if (data.getDay() === 6) {
+        classeSemana = "dia-sabado";
+    }
+
+
+    card.innerHTML = `
+
+        <div class="dia-mobile-header">
+
+            <div class="dia-mobile-data">
+
+                <strong class="dia-mobile-numero">
+
+                    ${String(data.getDate()).padStart(2, "0")}
+                    de ${MESES[data.getMonth()]}
+
+                </strong>
+
+                <span class="dia-mobile-semana ${classeSemana}">
+
+                    ${DIAS_SEMANA[data.getDay()]}
+
+                    • ${formatarData(data)}
+
+                </span>
+
+            </div>
+
+
+            <label class="trabalhou-mobile">
+
+                <input
+                    type="checkbox"
+                    data-campo="trabalhou"
+                    ${dados.trabalhou ? "checked" : ""}
+                >
+
+                Trabalhou
+
+            </label>
+
+        </div>
+
+
+        <div class="dia-mobile-campos">
+
+            <div class="dia-mobile-campo">
+
+                <label>
+                    Horas trabalhadas
+                </label>
+
+                <input
+                    type="text"
+                    inputmode="text"
+                    autocomplete="off"
+                    placeholder="08:00"
+                    value="${minutosParaHora(dados.minutos)}"
+                    data-campo="minutos"
+                >
+
+            </div>
+
+
+            <div class="dia-mobile-campo">
+
+                <label>
+                    Horas extras
+                </label>
+
+                <input
+                    type="text"
+                    inputmode="text"
+                    autocomplete="off"
+                    placeholder="00:00"
+                    value="${minutosParaHora(dados.minutosExtras)}"
+                    data-campo="minutosExtras"
+                >
+
+            </div>
+
+
+            <div class="dia-mobile-campo">
+
+                <label>
+                    Valor/h extra
+                </label>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="${dados.valorHoraExtra}"
+                    data-campo="valorHoraExtra"
+                >
+
+            </div>
+
+
+            <div class="dia-mobile-campo">
+
+                <label>
+                    Diária
+                </label>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="${dados.diaria}"
+                    data-campo="diaria"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="dia-mobile-total">
+
+            <span>
+                Total do dia
+            </span>
+
+            <strong class="total-dia">
+                ${calcularTotalDia(dados)}
+            </strong>
+
+        </div>
+
+    `;
+
+
+    adicionarEventosDia(
+        card,
+        chave
+    );
+
+
+    diasMobile.appendChild(card);
+}
+
+
+/* =========================================================
+   EVENTOS DOS DIAS
+========================================================= */
+
+function adicionarEventosDia(
+    elemento,
+    chave
+) {
+
+    const inputs =
+        elemento.querySelectorAll(
+            "[data-campo]"
+        );
+
+
+    inputs.forEach(input => {
+
+        input.addEventListener(
+            "change",
+            () => {
+
+                alterarDia(
+                    elemento,
+                    chave,
+                    input
+                );
+
+            }
+        );
+
+
+        input.addEventListener(
+            "input",
+            () => {
+
+                if (
+                    input.dataset.campo !==
+                    "trabalhou"
+                ) {
+
+                    alterarDia(
+                        elemento,
+                        chave,
+                        input
+                    );
+                }
+
+            }
+        );
+
+    });
+}
+
+
+/* =========================================================
+   ALTERAR DIA
+========================================================= */
+
+function alterarDia(
+    elemento,
+    chave,
+    input
+) {
+
+    const dados =
+        obterDadosDia(chave);
+
+
+    const campo =
+        input.dataset.campo;
+
+
+    if (campo === "trabalhou") {
+
+        dados.trabalhou =
+            input.checked;
 
     }
 
-    return registros;
 
+    else if (
+        campo === "minutos" ||
+        campo === "minutosExtras"
+    ) {
+
+        dados[campo] =
+            horaParaMinutos(
+                input.value
+            );
+
+    }
+
+
+    else {
+
+        dados[campo] =
+            numero(
+                input.value
+            );
+    }
+
+
+    atualizarElementosDia(
+        chave
+    );
+
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+
+    salvarDados(true);
+}
+
+
+/* =========================================================
+   ATUALIZAR DIA NA TELA
+========================================================= */
+
+function atualizarElementosDia(chave) {
+
+    const dados =
+        obterDadosDia(chave);
+
+
+    const elementos =
+        document.querySelectorAll(
+            `[data-chave="${chave}"]`
+        );
+
+
+    elementos.forEach(elemento => {
+
+        const checkbox =
+            elemento.querySelector(
+                '[data-campo="trabalhou"]'
+            );
+
+
+        if (checkbox) {
+
+            checkbox.checked =
+                dados.trabalhou;
+        }
+
+
+        const minutos =
+            elemento.querySelector(
+                '[data-campo="minutos"]'
+            );
+
+
+        if (
+            minutos &&
+            document.activeElement !== minutos
+        ) {
+
+            minutos.value =
+                minutosParaHora(
+                    dados.minutos
+                );
+        }
+
+
+        const extras =
+            elemento.querySelector(
+                '[data-campo="minutosExtras"]'
+            );
+
+
+        if (
+            extras &&
+            document.activeElement !== extras
+        ) {
+
+            extras.value =
+                minutosParaHora(
+                    dados.minutosExtras
+                );
+        }
+
+
+        const valorExtra =
+            elemento.querySelector(
+                '[data-campo="valorHoraExtra"]'
+            );
+
+
+        if (
+            valorExtra &&
+            document.activeElement !== valorExtra
+        ) {
+
+            valorExtra.value =
+                dados.valorHoraExtra;
+        }
+
+
+        const diaria =
+            elemento.querySelector(
+                '[data-campo="diaria"]'
+            );
+
+
+        if (
+            diaria &&
+            document.activeElement !== diaria
+        ) {
+
+            diaria.value =
+                dados.diaria;
+        }
+
+
+        const total =
+            elemento.querySelector(
+                ".total-dia"
+            );
+
+
+        if (total) {
+
+            total.textContent =
+                calcularTotalDia(
+                    dados
+                );
+        }
+
+
+        /*
+           Desktop
+        */
+
+        if (
+            dados.trabalhou &&
+            elemento.tagName === "TR"
+        ) {
+
+            elemento.classList.add(
+                "linha-trabalhou"
+            );
+
+            elemento.classList.remove(
+                "linha-nao-trabalhou"
+            );
+
+        }
+
+
+        else if (
+            !dados.trabalhou &&
+            elemento.tagName === "TR"
+        ) {
+
+            elemento.classList.remove(
+                "linha-trabalhou"
+            );
+
+            elemento.classList.add(
+                "linha-nao-trabalhou"
+            );
+        }
+
+
+        /*
+           Mobile
+        */
+
+        if (
+            dados.trabalhou &&
+            elemento.classList.contains(
+                "dia-mobile"
+            )
+        ) {
+
+            elemento.classList.add(
+                "trabalhado"
+            );
+
+            elemento.classList.remove(
+                "nao-trabalhado"
+            );
+
+        }
+
+
+        else if (
+            !dados.trabalhou &&
+            elemento.classList.contains(
+                "dia-mobile"
+            )
+        ) {
+
+            elemento.classList.remove(
+                "trabalhado"
+            );
+
+            elemento.classList.add(
+                "nao-trabalhado"
+            );
+        }
+
+    });
+}
+
+
+/* =========================================================
+   RESUMO MENSAL
+========================================================= */
+
+function atualizarResumo() {
+
+    let dias = 0;
+
+    let minutos = 0;
+
+    let minutosExtras = 0;
+
+    let totalDiarias = 0;
+
+    let totalExtras = 0;
+
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    for (
+        let dia = 1;
+        dia <= quantidade;
+        dia++
+    ) {
+
+        const chave =
+            criarChaveDia(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const dados =
+            obterDadosDia(chave);
+
+
+        if (!dados.trabalhou) {
+            continue;
+        }
+
+
+        dias++;
+
+
+        minutos +=
+            numero(dados.minutos);
+
+
+        minutosExtras +=
+            numero(dados.minutosExtras);
+
+
+        totalDiarias +=
+            numero(dados.diaria);
+
+
+        totalExtras +=
+            (
+                numero(dados.minutosExtras) / 60
+            ) *
+            numero(dados.valorHoraExtra);
+    }
+
+
+    totalDiasElement.textContent =
+        dias;
+
+
+    totalHorasElement.textContent =
+        formatarHoras(minutos);
+
+
+    totalHorasExtrasElement.textContent =
+        formatarHoras(minutosExtras);
+
+
+    totalDiariasElement.textContent =
+        dinheiro(totalDiarias);
+
+
+    totalExtrasElement.textContent =
+        dinheiro(totalExtras);
+
+
+    totalGeralElement.textContent =
+        dinheiro(
+            totalDiarias +
+            totalExtras
+        );
+}
+
+
+/* =========================================================
+   RESUMO SEMANAL
+========================================================= */
+
+function gerarResumoSemanal() {
+
+    semanasContainer.innerHTML = "";
+
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    let semanaAtual = [];
+
+
+    for (
+        let dia = 1;
+        dia <= quantidade;
+        dia++
+    ) {
+
+        const data =
+            new Date(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const diaSemana =
+            data.getDay();
+
+
+        /*
+           Segunda-feira começa uma nova semana.
+        */
+
+        if (
+            diaSemana === 1 &&
+            semanaAtual.length > 0
+        ) {
+
+            criarCardSemana(
+                semanaAtual
+            );
+
+            semanaAtual = [];
+        }
+
+
+        semanaAtual.push(data);
+    }
+
+
+    if (semanaAtual.length > 0) {
+
+        criarCardSemana(
+            semanaAtual
+        );
+    }
+}
+
+
+function criarCardSemana(dias) {
+
+    if (!dias.length) {
+        return;
+    }
+
+
+    let trabalhados = 0;
+
+    let minutos = 0;
+
+    let minutosExtras = 0;
+
+    let total = 0;
+
+
+    dias.forEach(data => {
+
+        const chave =
+            criarChaveDia(
+                data.getFullYear(),
+                data.getMonth(),
+                data.getDate()
+            );
+
+
+        const dados =
+            obterDadosDia(chave);
+
+
+        if (!dados.trabalhou) {
+            return;
+        }
+
+
+        trabalhados++;
+
+
+        minutos +=
+            numero(dados.minutos);
+
+
+        minutosExtras +=
+            numero(dados.minutosExtras);
+
+
+        total +=
+            calcularValorDia(
+                dados
+            );
+    });
+
+
+    const inicio =
+        formatarData(
+            dias[0]
+        );
+
+
+    const fim =
+        formatarData(
+            dias[dias.length - 1]
+        );
+
+
+    const card =
+        document.createElement("div");
+
+
+    card.className =
+        "semana-card";
+
+
+    card.innerHTML = `
+
+        <h3>
+            Semana
+        </h3>
+
+        <p class="datas">
+            ${inicio} → ${fim}
+        </p>
+
+        <div class="semana-info">
+
+            <span>
+                Dias trabalhados
+            </span>
+
+            <strong>
+                ${trabalhados}
+            </strong>
+
+        </div>
+
+
+        <div class="semana-info">
+
+            <span>
+                Horas
+            </span>
+
+            <strong>
+                ${formatarHoras(minutos)}
+            </strong>
+
+        </div>
+
+
+        <div class="semana-info">
+
+            <span>
+                Horas extras
+            </span>
+
+            <strong>
+                ${formatarHoras(minutosExtras)}
+            </strong>
+
+        </div>
+
+
+        <div class="semana-total">
+
+            ${dinheiro(total)}
+
+        </div>
+
+    `;
+
+
+    semanasContainer.appendChild(
+        card
+    );
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO DE MESES
+========================================================= */
+
+function atualizarTelaMes() {
+
+    carregarDados();
+
+    definirDatasPeriodo();
+
+    gerarCalendario();
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+}
+
+
+function mudarMes(quantidade) {
+
+    salvarDados(true);
+
+
+    let ano =
+        Number(anoInput.value);
+
+    let mes =
+        Number(mesInput.value);
+
+
+    mes += quantidade;
+
+
+    while (mes < 0) {
+
+        mes += 12;
+        ano--;
+    }
+
+
+    while (mes > 11) {
+
+        mes -= 12;
+        ano++;
+    }
+
+
+    anoInput.value =
+        ano;
+
+    mesInput.value =
+        mes;
+
+
+    atualizarTelaMes();
+}
+
+
+function irParaMesAtual() {
+
+    salvarDados(true);
+
+
+    const agora =
+        new Date();
+
+
+    anoInput.value =
+        agora.getFullYear();
+
+
+    mesInput.value =
+        agora.getMonth();
+
+
+    atualizarTelaMes();
+}
+
+
+/* =========================================================
+   APLICAR DIÁRIA A TODOS
+========================================================= */
+
+function aplicarDiariaTodos() {
+
+    const valor =
+        numero(
+            diariaPadraoInput.value
+        );
+
+
+    if (valor <= 0) {
+
+        mostrarNotificacao(
+            "Informe uma diária válida.",
+            "erro"
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            `Aplicar a diária de ${dinheiro(valor)} em todos os dias do mês?`
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    for (
+        let dia = 1;
+        dia <= quantidade;
+        dia++
+    ) {
+
+        const chave =
+            criarChaveDia(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const dados =
+            obterDadosDia(chave);
+
+
+        dados.diaria =
+            valor;
+    }
+
+
+    gerarCalendario();
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+
+    salvarDados(true);
+
+
+    mostrarNotificacao(
+        "Diária aplicada a todos os dias.",
+        "sucesso"
+    );
+}
+
+
+/* =========================================================
+   APLICAR HORA EXTRA A TODOS
+========================================================= */
+
+function aplicarHoraExtraTodos() {
+
+    const valor =
+        numero(
+            horaExtraPadraoInput.value
+        );
+
+
+    if (valor <= 0) {
+
+        mostrarNotificacao(
+            "Informe um valor de hora extra válido.",
+            "erro"
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            `Aplicar ${dinheiro(valor)} por hora extra em todos os dias?`
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    for (
+        let dia = 1;
+        dia <= quantidade;
+        dia++
+    ) {
+
+        const chave =
+            criarChaveDia(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const dados =
+            obterDadosDia(chave);
+
+
+        dados.valorHoraExtra =
+            valor;
+    }
+
+
+    gerarCalendario();
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+
+    salvarDados(true);
+
+
+    mostrarNotificacao(
+        "Valor da hora extra aplicado a todos os dias.",
+        "sucesso"
+    );
+}
+
+
+/* =========================================================
+   LIMPAR MÊS
+========================================================= */
+
+function limparMes() {
+
+    const mes =
+        MESES[
+            Number(mesInput.value)
+        ];
+
+
+    const ano =
+        Number(anoInput.value);
+
+
+    const confirmar =
+        confirm(
+            `Tem certeza que deseja apagar todos os dados de ${mes} de ${ano}?`
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const banco =
+        obterBanco();
+
+
+    delete banco[
+        chaveMes()
+    ];
+
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(banco)
+    );
+
+
+    dadosDias = {};
+
+    nomeInput.value = "";
+
+    tipoPagamentoInput.value =
+        "mensal";
+
+    diariaPadraoInput.value = 0;
+
+    horaExtraPadraoInput.value = 0;
+
+
+    gerarCalendario();
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+
+
+    mostrarNotificacao(
+        "Mês limpo com sucesso.",
+        "sucesso"
+    );
+}
+
+
+/* =========================================================
+   BACKUP - EXPORTAR
+========================================================= */
+
+function exportarBackup() {
+
+    salvarDados(true);
+
+
+    const banco =
+        obterBanco();
+
+
+    const backup = {
+
+        aplicativo:
+            "Controle de Pagamentos",
+
+        versao:
+            "2.1",
+
+        dataExportacao:
+            new Date().toISOString(),
+
+        dados:
+            banco
+    };
+
+
+    const conteudo =
+        JSON.stringify(
+            backup,
+            null,
+            2
+        );
+
+
+    const blob =
+        new Blob(
+            [conteudo],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        `backup-controle-pagamentos-${dataParaInput(new Date())}.json`;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+
+    mostrarNotificacao(
+        "Backup exportado com sucesso!",
+        "sucesso"
+    );
+}
+
+
+/* =========================================================
+   BACKUP - IMPORTAR
+========================================================= */
+
+function importarBackupArquivo(arquivo) {
+
+    if (!arquivo) {
+        return;
+    }
+
+
+    const leitor =
+        new FileReader();
+
+
+    leitor.onload =
+        function(evento) {
+
+            try {
+
+                const backup =
+                    JSON.parse(
+                        evento.target.result
+                    );
+
+
+                const dados =
+                    backup.dados ||
+                    backup;
+
+
+                if (
+                    typeof dados !== "object" ||
+                    dados === null ||
+                    Array.isArray(dados)
+                ) {
+
+                    throw new Error(
+                        "Formato inválido."
+                    );
+                }
+
+
+                const confirmar =
+                    confirm(
+                        "Importar este backup substituirá todos os dados atualmente salvos no navegador. Deseja continuar?"
+                    );
+
+
+                if (!confirmar) {
+                    return;
+                }
+
+
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(dados)
+                );
+
+
+                atualizarTelaMes();
+
+
+                mostrarNotificacao(
+                    "Backup importado com sucesso!",
+                    "sucesso"
+                );
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    erro
+                );
+
+
+                mostrarNotificacao(
+                    "Não foi possível importar o backup.",
+                    "erro"
+                );
+            }
+
+        };
+
+
+    leitor.readAsText(
+        arquivo
+    );
+}
+
+
+/* =========================================================
+   MODO ESCURO
+========================================================= */
+
+function atualizarBotaoTema() {
+
+    if (!btnTema) {
+        return;
+    }
+
+
+    const escuro =
+        document.body.classList.contains(
+            "modo-escuro"
+        );
+
+
+    btnTema.textContent =
+        escuro
+            ? "☀️ Modo claro"
+            : "🌙 Modo escuro";
+}
+
+
+function carregarTema() {
+
+    const tema =
+        localStorage.getItem(
+            TEMA_KEY
+        );
+
+
+    if (tema === "escuro") {
+
+        document.body.classList.add(
+            "modo-escuro"
+        );
+    }
+
+
+    atualizarBotaoTema();
+}
+
+
+function alternarTema() {
+
+    const escuro =
+        document.body.classList.toggle(
+            "modo-escuro"
+        );
+
+
+    localStorage.setItem(
+        TEMA_KEY,
+        escuro
+            ? "escuro"
+            : "claro"
+    );
+
+
+    atualizarBotaoTema();
+}
+
+
+/* =========================================================
+   PDF
+========================================================= */
+
+function verificarJsPDF() {
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+
+        mostrarNotificacao(
+            "A biblioteca de PDF não foi carregada. Verifique sua internet.",
+            "erro"
+        );
+
+        return false;
+    }
+
+
+    return true;
+}
+
+
+/* =========================================================
+   CABEÇALHO DO PDF
+========================================================= */
+
+function criarCabecalhoPDF(
+    doc,
+    titulo,
+    nome,
+    periodo
+) {
+
+    doc.setFontSize(20);
+
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+        "Controle de Pagamentos",
+        14,
+        18
+    );
+
+
+    doc.setFontSize(13);
+
+    doc.setFont(undefined, "normal");
+
+    doc.text(
+        titulo,
+        14,
+        27
+    );
+
+
+    if (nome) {
+
+        doc.text(
+            `Nome: ${nome}`,
+            14,
+            36
+        );
+    }
+
+
+    doc.text(
+        `Período: ${periodo}`,
+        14,
+        nome ? 44 : 36
+    );
+}
+
+
+/* =========================================================
+   PREPARAR DADOS PARA PDF
+========================================================= */
+
+function dadosParaPDFDoMes() {
+
+    const ano =
+        Number(anoInput.value);
+
+    const mes =
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    const dados = [];
+
+
+    for (
+        let dia = 1;
+        dia <= quantidade;
+        dia++
+    ) {
+
+        const data =
+            new Date(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const chave =
+            criarChaveDia(
+                ano,
+                mes,
+                dia
+            );
+
+
+        const dadosDia =
+            obterDadosDia(chave);
+
+
+        if (!dadosDia.trabalhou) {
+            continue;
+        }
+
+
+        dados.push({
+
+            data:
+                formatarData(data),
+
+            dia:
+                DIAS_SEMANA[data.getDay()],
+
+            horas:
+                minutosParaHora(
+                    dadosDia.minutos
+                ),
+
+            extras:
+                minutosParaHora(
+                    dadosDia.minutosExtras
+                ),
+
+            valorHoraExtra:
+                numero(
+                    dadosDia.valorHoraExtra
+                ),
+
+            diaria:
+                numero(
+                    dadosDia.diaria
+                ),
+
+            total:
+                calcularValorDia(
+                    dadosDia
+                )
+        });
+    }
+
+
+    return dados;
+}
+
+
+/* =========================================================
+   PDF GENÉRICO
+========================================================= */
+
+function gerarPDFDados(
+    titulo,
+    periodo,
+    dados,
+    nomeArquivo
+) {
+
+    if (!verificarJsPDF()) {
+        return;
+    }
+
+
+    if (
+        typeof window.jspdf.jsPDF !==
+        "function"
+    ) {
+
+        mostrarNotificacao(
+            "Não foi possível iniciar o PDF.",
+            "erro"
+        );
+
+        return;
+    }
+
+
+    const jsPDF =
+        window.jspdf.jsPDF;
+
+
+    const doc =
+        new jsPDF({
+            orientation:
+                "landscape"
+        });
+
+
+    criarCabecalhoPDF(
+        doc,
+        titulo,
+        nomeInput.value,
+        periodo
+    );
+
+
+    const linhas =
+        dados.map(item => [
+
+            item.data,
+
+            item.dia,
+
+            item.horas,
+
+            item.extras,
+
+            dinheiro(
+                item.valorHoraExtra
+            ),
+
+            dinheiro(
+                item.diaria
+            ),
+
+            dinheiro(
+                item.total
+            )
+
+        ]);
+
+
+    const total =
+        dados.reduce(
+            (soma, item) =>
+                soma +
+                numero(item.total),
+            0
+        );
+
+
+    /*
+       O AutoTable precisa estar carregado.
+    */
+
+    if (
+        typeof doc.autoTable !==
+        "function"
+    ) {
+
+        mostrarNotificacao(
+            "O recurso de tabela do PDF não foi carregado.",
+            "erro"
+        );
+
+        return;
+    }
+
+
+    doc.autoTable({
+
+        startY: 52,
+
+        head: [[
+
+            "Data",
+
+            "Dia",
+
+            "Horas",
+
+            "Extras",
+
+            "Valor/h Extra",
+
+            "Diária",
+
+            "Total"
+
+        ]],
+
+        body: linhas,
+
+        theme: "grid",
+
+        styles: {
+
+            fontSize: 9,
+
+            cellPadding: 4,
+
+            halign: "center"
+
+        },
+
+        headStyles: {
+
+            fontStyle:
+                "bold"
+        },
+
+        foot: [[
+
+            "",
+            "",
+            "",
+            "",
+            "",
+            "TOTAL",
+            dinheiro(total)
+
+        ]],
+
+        footStyles: {
+
+            fontStyle:
+                "bold"
+        }
+    });
+
+
+    let y =
+        doc.lastAutoTable.finalY + 12;
+
+
+    /*
+       Se o resumo passar da página,
+       cria uma nova página.
+    */
+
+    if (y > 190) {
+
+        doc.addPage();
+
+        y = 20;
+    }
+
+
+    doc.setFontSize(15);
+
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+        `TOTAL A RECEBER: ${dinheiro(total)}`,
+        14,
+        y
+    );
+
+
+    y += 9;
+
+
+    const totalMinutos =
+        dados.reduce(
+            (soma, item) =>
+                soma +
+                horaParaMinutos(
+                    item.horas
+                ),
+            0
+        );
+
+
+    const totalExtrasMinutos =
+        dados.reduce(
+            (soma, item) =>
+                soma +
+                horaParaMinutos(
+                    item.extras
+                ),
+            0
+        );
+
+
+    doc.setFontSize(10);
+
+    doc.setFont(undefined, "normal");
+
+
+    doc.text(
+        `Dias trabalhados: ${dados.length}`,
+        14,
+        y
+    );
+
+
+    doc.text(
+        `Horas trabalhadas: ${formatarHoras(totalMinutos)}`,
+        90,
+        y
+    );
+
+
+    doc.text(
+        `Horas extras: ${formatarHoras(totalExtrasMinutos)}`,
+        180,
+        y
+    );
+
+
+    doc.save(
+        nomeArquivo
+    );
+
+
+    mostrarNotificacao(
+        "PDF gerado com sucesso!",
+        "sucesso"
+    );
 }
 
 
@@ -1269,32 +2553,70 @@ function obterDadosPeriodo(dataInicio, dataFim) {
 
 function gerarPdfMes() {
 
+    salvarDados(true);
+
+
     const ano =
-        numero(anoInput.value);
+        Number(anoInput.value);
 
     const mes =
-        numero(mesInput.value);
+        Number(mesInput.value);
 
-    const primeiroDia =
-        new Date(
-            ano,
-            mes,
-            1
-        );
 
-    const ultimoDia =
-        new Date(
-            ano,
-            mes,
-            diasNoMes(ano, mes)
-        );
+    const dados =
+        dadosParaPDFDoMes();
 
-    gerarPdf(
-        primeiroDia,
-        ultimoDia,
-        `Mês de ${MESES[mes]} de ${ano}`
+
+    gerarPDFDados(
+
+        `Relatório mensal - ${MESES[mes]} de ${ano}`,
+
+        `${MESES[mes]} de ${ano}`,
+
+        dados,
+
+        `controle-pagamentos-${ano}-${String(mes + 1).padStart(2, "0")}.pdf`
     );
+}
 
+
+/* =========================================================
+   PEGAR DADOS DE QUALQUER MÊS
+========================================================= */
+
+function obterDadosSalvosDoDia(data) {
+
+    const banco =
+        obterBanco();
+
+
+    const ano =
+        data.getFullYear();
+
+    const mes =
+        data.getMonth();
+
+
+    const chaveMesAtual =
+        chaveMesData(
+            ano,
+            mes
+        );
+
+
+    const dadosMes =
+        banco[chaveMesAtual]?.dias || {};
+
+
+    const chaveDia =
+        criarChaveDia(
+            ano,
+            mes,
+            data.getDate()
+        );
+
+
+    return dadosMes[chaveDia] || null;
 }
 
 
@@ -1302,26 +2624,51 @@ function gerarPdfMes() {
    PDF SEMANAL
 ========================================================= */
 
-function gerarPdfSemanal() {
+function gerarPdfSemana() {
 
-    const dataSelecionada =
+    const diaEscolhido =
         prompt(
-            "Digite o número do dia da semana que deseja consultar.\n\n" +
-            "Exemplo: 10 para a semana que contém o dia 10."
+            "Digite o número de um dia pertencente à semana que deseja gerar.\n\nExemplo: 15"
         );
 
-    if (!dataSelecionada) {
+
+    if (!diaEscolhido) {
         return;
     }
 
+
     const dia =
-        numero(dataSelecionada);
+        Number(diaEscolhido);
+
 
     const ano =
-        numero(anoInput.value);
+        Number(anoInput.value);
 
     const mes =
-        numero(mesInput.value);
+        Number(mesInput.value);
+
+
+    const quantidade =
+        diasNoMes(
+            ano,
+            mes
+        );
+
+
+    if (
+        !Number.isInteger(dia) ||
+        dia < 1 ||
+        dia > quantidade
+    ) {
+
+        mostrarNotificacao(
+            "Dia inválido.",
+            "erro"
+        );
+
+        return;
+    }
+
 
     const data =
         new Date(
@@ -1330,42 +2677,121 @@ function gerarPdfSemanal() {
             dia
         );
 
-    if (
-        data.getMonth() !== mes ||
-        data.getFullYear() !== ano
-    ) {
 
-        alert(
-            "Digite um dia válido deste mês."
-        );
+    const diaSemana =
+        data.getDay();
 
-        return;
 
-    }
+    /*
+       Segunda-feira = início da semana.
+       Domingo = fim da semana.
+    */
 
-    const indice =
-        (data.getDay() + 6) % 7;
+    const deslocamento =
+        diaSemana === 0
+            ? 6
+            : diaSemana - 1;
 
-    const inicio =
+
+    const segunda =
         new Date(data);
 
-    inicio.setDate(
-        data.getDate() - indice
+
+    segunda.setDate(
+        data.getDate() -
+        deslocamento
     );
 
-    const fim =
-        new Date(inicio);
 
-    fim.setDate(
-        inicio.getDate() + 6
+    const domingo =
+        new Date(segunda);
+
+
+    domingo.setDate(
+        segunda.getDate() + 6
     );
 
-    gerarPdf(
-        inicio,
-        fim,
-        `Semana de ${formatarData(inicio)} a ${formatarData(fim)}`
-    );
 
+    const dadosSemana = [];
+
+
+    for (
+        let i = 0;
+        i < 7;
+        i++
+    ) {
+
+        const atual =
+            new Date(segunda);
+
+
+        atual.setDate(
+            segunda.getDate() + i
+        );
+
+
+        const dados =
+            obterDadosSalvosDoDia(
+                atual
+            );
+
+
+        if (
+            dados &&
+            dados.trabalhou
+        ) {
+
+            dadosSemana.push({
+
+                data:
+                    formatarData(
+                        atual
+                    ),
+
+                dia:
+                    DIAS_SEMANA[
+                        atual.getDay()
+                    ],
+
+                horas:
+                    minutosParaHora(
+                        dados.minutos
+                    ),
+
+                extras:
+                    minutosParaHora(
+                        dados.minutosExtras
+                    ),
+
+                diaria:
+                    numero(
+                        dados.diaria
+                    ),
+
+                valorHoraExtra:
+                    numero(
+                        dados.valorHoraExtra
+                    ),
+
+                total:
+                    calcularValorDia(
+                        dados
+                    )
+            });
+        }
+    }
+
+
+    gerarPDFDados(
+
+        "Relatório semanal",
+
+        `${formatarData(segunda)} até ${formatarData(domingo)}`,
+
+        dadosSemana,
+
+        `controle-pagamentos-semana-${dataParaInput(segunda)}.pdf`
+    );
 }
 
 
@@ -1375,492 +2801,289 @@ function gerarPdfSemanal() {
 
 function gerarPdfPeriodo() {
 
-    if (
-        !dataInicioInput.value ||
-        !dataFimInput.value
-    ) {
-
-        alert(
-            "Informe a data inicial e a data final."
-        );
-
-        return;
-
-    }
-
     const inicio =
-        new Date(
-            `${dataInicioInput.value}T00:00:00`
-        );
+        dataInicioInput.value;
 
     const fim =
+        dataFimInput.value;
+
+
+    if (!inicio || !fim) {
+
+        mostrarNotificacao(
+            "Informe a data inicial e final.",
+            "erro"
+        );
+
+        return;
+    }
+
+
+    const dataInicial =
         new Date(
-            `${dataFimInput.value}T00:00:00`
+            inicio + "T00:00:00"
         );
 
-    if (inicio > fim) {
 
-        alert(
-            "A data inicial não pode ser maior que a data final."
+    const dataFinal =
+        new Date(
+            fim + "T00:00:00"
         );
 
-        return;
 
-    }
+    if (
+        dataInicial >
+        dataFinal
+    ) {
 
-    gerarPdfPeriodoCompleto(
-        inicio,
-        fim
-    );
-
-}
-
-
-/* =========================================================
-   PDF PRINCIPAL
-========================================================= */
-
-function gerarPdf(
-    inicio,
-    fim,
-    tituloPeriodo
-) {
-
-    const registros =
-        obterDadosPeriodo(
-            inicio,
-            fim
-        );
-
-    criarPDF(
-        registros,
-        tituloPeriodo
-    );
-
-}
-
-
-/* =========================================================
-   PDF PERÍODO ATRAVESSANDO MESES
-========================================================= */
-
-function gerarPdfPeriodoCompleto(
-    inicio,
-    fim
-) {
-
-    const registros = [];
-
-    let data =
-        new Date(inicio);
-
-    while (data <= fim) {
-
-        const ano =
-            data.getFullYear();
-
-        const mes =
-            data.getMonth();
-
-        const chaveMesAtual =
-            `${ano}-${mes}`;
-
-        const banco =
-            JSON.parse(
-                localStorage.getItem(STORAGE_KEY) || "{}"
-            );
-
-        const dadosMes =
-            banco[chaveMesAtual];
-
-        if (dadosMes) {
-
-            const chave =
-                criarChaveDia(
-                    ano,
-                    mes,
-                    data.getDate()
-                );
-
-            const dados =
-                dadosMes.dias?.[chave];
-
-            if (dados) {
-
-                registros.push({
-
-                    data:
-                        new Date(data),
-
-                    dados
-
-                });
-
-            }
-
-        }
-
-        data.setDate(
-            data.getDate() + 1
-        );
-
-    }
-
-    criarPDF(
-        registros,
-        `Período de ${formatarData(inicio)} a ${formatarData(fim)}`
-    );
-
-}
-
-
-/* =========================================================
-   CRIAR PDF
-========================================================= */
-
-function criarPDF(
-    registros,
-    tituloPeriodo
-) {
-
-    if (!window.jspdf) {
-
-        alert(
-            "A biblioteca de PDF não foi carregada. Verifique sua conexão com a internet."
+        mostrarNotificacao(
+            "A data inicial não pode ser maior que a data final.",
+            "erro"
         );
 
         return;
-
     }
 
-    const {
-        jsPDF
-    } = window.jspdf;
 
-    const pdf =
-        new jsPDF(
-            "landscape"
+    const dadosPeriodo = [];
+
+
+    const cursor =
+        new Date(
+            dataInicial
         );
 
 
-    const nome =
-        nomeInput.value.trim() ||
-        "Não informado";
-
-
-    pdf.setFontSize(18);
-
-    pdf.text(
-        "Controle de Pagamentos",
-        14,
-        18
-    );
-
-
-    pdf.setFontSize(11);
-
-    pdf.text(
-        `Nome: ${nome}`,
-        14,
-        27
-    );
-
-    pdf.text(
-        tituloPeriodo,
-        14,
-        34
-    );
-
-
-    const linhas = [];
-
-    let totalDias = 0;
-    let totalHoras = 0;
-    let totalHorasExtras = 0;
-    let totalDiarias = 0;
-    let totalExtras = 0;
-
-
-    registros.forEach(registro => {
+    while (
+        cursor <= dataFinal
+    ) {
 
         const dados =
-            registro.dados;
+            obterDadosSalvosDoDia(
+                cursor
+            );
 
-        if (!dados.trabalhou) {
-            return;
+
+        if (
+            dados &&
+            dados.trabalhou
+        ) {
+
+            dadosPeriodo.push({
+
+                data:
+                    formatarData(
+                        cursor
+                    ),
+
+                dia:
+                    DIAS_SEMANA[
+                        cursor.getDay()
+                    ],
+
+                horas:
+                    minutosParaHora(
+                        dados.minutos
+                    ),
+
+                extras:
+                    minutosParaHora(
+                        dados.minutosExtras
+                    ),
+
+                diaria:
+                    numero(
+                        dados.diaria
+                    ),
+
+                valorHoraExtra:
+                    numero(
+                        dados.valorHoraExtra
+                    ),
+
+                total:
+                    calcularValorDia(
+                        dados
+                    )
+            });
         }
 
-        const diaria =
-            numero(dados.diaria);
 
-        const horas =
-            numero(dados.horas);
-
-        const horasExtras =
-            numero(dados.horasExtras);
-
-        const valorHoraExtra =
-            numero(dados.valorHoraExtra);
-
-        const valorExtras =
-            horasExtras *
-            valorHoraExtra;
-
-        const total =
-            diaria +
-            valorExtras;
+        cursor.setDate(
+            cursor.getDate() + 1
+        );
+    }
 
 
-        totalDias++;
+    gerarPDFDados(
 
-        totalHoras += horas;
+        "Relatório por período",
 
-        totalHorasExtras +=
-            horasExtras;
+        `${formatarData(dataInicial)} até ${formatarData(dataFinal)}`,
 
-        totalDiarias +=
-            diaria;
+        dadosPeriodo,
 
-        totalExtras +=
-            valorExtras;
-
-
-        linhas.push([
-
-            formatarData(registro.data),
-
-            DIAS_SEMANA[
-                registro.data.getDay()
-            ],
-
-            `${horas}h`,
-
-            `${horasExtras}h`,
-
-            dinheiro(valorHoraExtra),
-
-            dinheiro(diaria),
-
-            dinheiro(valorExtras),
-
-            dinheiro(total)
-
-        ]);
-
-    });
-
-
-    pdf.autoTable({
-
-        startY: 42,
-
-        head: [[
-
-            "Data",
-            "Dia",
-            "Horas",
-            "Horas extras",
-            "Valor/h extra",
-            "Diária",
-            "Total extras",
-            "Total do dia"
-
-        ]],
-
-        body: linhas,
-
-        theme: "grid",
-
-        styles: {
-            fontSize: 8,
-            cellPadding: 4
-        },
-
-        headStyles: {
-            fontStyle: "bold"
-        }
-
-    });
-
-
-    let y =
-        pdf.lastAutoTable.finalY + 12;
-
-
-    pdf.setFontSize(11);
-
-    pdf.text(
-        `Dias trabalhados: ${totalDias}`,
-        14,
-        y
+        `controle-pagamentos-periodo-${inicio}-${fim}.pdf`
     );
-
-    y += 7;
-
-    pdf.text(
-        `Horas trabalhadas: ${totalHoras}h`,
-        14,
-        y
-    );
-
-    y += 7;
-
-    pdf.text(
-        `Horas extras: ${totalHorasExtras}h`,
-        14,
-        y
-    );
-
-    y += 7;
-
-    pdf.text(
-        `Total das diárias: ${dinheiro(totalDiarias)}`,
-        14,
-        y
-    );
-
-    y += 7;
-
-    pdf.text(
-        `Total de horas extras: ${dinheiro(totalExtras)}`,
-        14,
-        y
-    );
-
-    y += 10;
-
-
-    pdf.setFontSize(14);
-
-    pdf.text(
-        `TOTAL A RECEBER: ${dinheiro(
-            totalDiarias + totalExtras
-        )}`,
-        14,
-        y
-    );
-
-
-    const dataArquivo =
-        new Date()
-            .toISOString()
-            .split("T")[0];
-
-
-    pdf.save(
-        `controle-pagamentos-${dataArquivo}.pdf`
-    );
-
 }
 
 
 /* =========================================================
-   BOTÃO HOJE
+   EVENTOS
 ========================================================= */
+
+
+/*
+   Mês atual
+*/
 
 document
     .getElementById("btnHoje")
     .addEventListener(
         "click",
-        function() {
-
-            const agora =
-                new Date();
-
-            anoInput.value =
-                agora.getFullYear();
-
-            mesInput.value =
-                agora.getMonth();
-
-            carregarDados();
-
-            gerarCalendario();
-
-            atualizarResumo();
-
-            gerarResumoSemanal();
-
-        }
+        irParaMesAtual
     );
 
 
-/* =========================================================
-   BOTÃO SALVAR
-========================================================= */
+/*
+   Mês anterior
+*/
+
+document
+    .getElementById("btnMesAnterior")
+    .addEventListener(
+        "click",
+        () => mudarMes(-1)
+    );
+
+
+/*
+   Próximo mês
+*/
+
+document
+    .getElementById("btnProximoMes")
+    .addEventListener(
+        "click",
+        () => mudarMes(1)
+    );
+
+
+/*
+   Salvar
+*/
 
 document
     .getElementById("btnSalvar")
     .addEventListener(
         "click",
-        function() {
-
-            salvarDados(true);
-
-        }
+        () => salvarDados(false)
     );
 
 
-/* =========================================================
-   BOTÃO LIMPAR
-========================================================= */
+/*
+   Limpar
+*/
 
 document
     .getElementById("btnLimpar")
     .addEventListener(
         "click",
-        function() {
+        limparMes
+    );
 
-            const confirmar =
-                confirm(
-                    "Tem certeza que deseja apagar todos os registros deste mês?"
-                );
 
-            if (!confirmar) {
-                return;
-            }
+/*
+   Aplicar diária
+*/
 
-            const ano =
-                numero(anoInput.value);
+document
+    .getElementById("btnAplicarDiaria")
+    .addEventListener(
+        "click",
+        aplicarDiariaTodos
+    );
 
-            const mes =
-                numero(mesInput.value);
 
-            const quantidadeDias =
-                diasNoMes(ano, mes);
+/*
+   Aplicar hora extra
+*/
 
-            for (
-                let dia = 1;
-                dia <= quantidadeDias;
-                dia++
-            ) {
+document
+    .getElementById("btnAplicarExtra")
+    .addEventListener(
+        "click",
+        aplicarHoraExtraTodos
+    );
 
-                const chave =
-                    criarChaveDia(
-                        ano,
-                        mes,
-                        dia
-                    );
 
-                delete dadosDias[chave];
+/*
+   Exportar backup
+*/
 
-            }
+document
+    .getElementById("btnExportar")
+    .addEventListener(
+        "click",
+        exportarBackup
+    );
 
-            salvarDados(false);
 
-            gerarCalendario();
+/*
+   Abrir importação
+*/
 
-            atualizarResumo();
+document
+    .getElementById("btnImportar")
+    .addEventListener(
+        "click",
+        () => {
 
-            gerarResumoSemanal();
+            document
+                .getElementById("arquivoBackup")
+                .click();
 
         }
     );
 
 
-/* =========================================================
-   BOTÕES PDF
-========================================================= */
+/*
+   Arquivo de backup
+*/
+
+document
+    .getElementById("arquivoBackup")
+    .addEventListener(
+        "change",
+        evento => {
+
+            importarBackupArquivo(
+                evento.target.files[0]
+            );
+
+
+            evento.target.value = "";
+
+        }
+    );
+
+
+/*
+   Tema
+*/
+
+if (btnTema) {
+
+    btnTema.addEventListener(
+        "click",
+        alternarTema
+    );
+}
+
+
+/*
+   PDF mensal
+*/
 
 document
     .getElementById("btnPdfMes")
@@ -1870,13 +3093,21 @@ document
     );
 
 
+/*
+   PDF semanal
+*/
+
 document
     .getElementById("btnPdfSemana")
     .addEventListener(
         "click",
-        gerarPdfSemanal
+        gerarPdfSemana
     );
 
+
+/*
+   PDF por período
+*/
 
 document
     .getElementById("btnPdfPeriodo")
@@ -1887,46 +3118,95 @@ document
 
 
 /* =========================================================
-   MUDANÇAS DE ANO / MÊS
+   MUDANÇA DE MÊS / ANO
 ========================================================= */
-
-anoInput.addEventListener(
-    "change",
-    mudarMes
-);
 
 mesInput.addEventListener(
     "change",
-    mudarMes
+    () => {
+
+        salvarDados(true);
+
+        atualizarTelaMes();
+
+    }
+);
+
+
+anoInput.addEventListener(
+    "change",
+    () => {
+
+        salvarDados(true);
+
+        atualizarTelaMes();
+
+    }
 );
 
 
 /* =========================================================
-   INFORMAÇÕES GERAIS
+   DADOS GERAIS
 ========================================================= */
 
 nomeInput.addEventListener(
     "input",
-    function() {
-
-        salvarDados(false);
-
-    }
+    () => salvarDados(true)
 );
 
 
 tipoPagamentoInput.addEventListener(
     "change",
-    function() {
-
-        salvarDados(false);
-
-    }
+    () => salvarDados(true)
 );
 
 
 /* =========================================================
-   INICIAR SISTEMA
+   VALORES PADRÃO
 ========================================================= */
+
+diariaPadraoInput.addEventListener(
+    "change",
+    () => salvarDados(true)
+);
+
+
+horaExtraPadraoInput.addEventListener(
+    "change",
+    () => salvarDados(true)
+);
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+function inicializar() {
+
+    const agora =
+        new Date();
+
+
+    anoInput.value =
+        agora.getFullYear();
+
+
+    mesInput.value =
+        agora.getMonth();
+
+
+    carregarDados();
+
+    carregarTema();
+
+    definirDatasPeriodo();
+
+    gerarCalendario();
+
+    atualizarResumo();
+
+    gerarResumoSemanal();
+}
+
 
 inicializar();
